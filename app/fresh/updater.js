@@ -35,6 +35,13 @@ class Updater {
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
     self._updatePromise = null;
     self._state = STATE_IDLE;
+
+    self.STATE_IDLE = STATE_IDLE;
+    self.STATE_CHECKING_FOR_UPDATE = STATE_CHECKING_FOR_UPDATE;
+    self.STATE_UPDATE_AVAILABLE = STATE_UPDATE_AVAILABLE;
+    self.STATE_UPDATE_DOWNLOADED = STATE_UPDATE_DOWNLOADED;
+    self.STATE_UPDATE_NOT_AVAILABLE = STATE_UPDATE_NOT_AVAILABLE;
+    self.STATE_ERROR = STATE_ERROR;
   }
 
   set state(state) {
