@@ -8,6 +8,7 @@ const unzip = require('unzip');
 const fsRemove = require('fs-extra/lib/remove');
 const fsMove = require('fs-extra/lib/move');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
+const {EventEmitter} = require('events');
 
 /**
  * @typedef {{}} FreshBundleUpdate
@@ -28,8 +29,9 @@ const STATE_UPDATE_DOWNLOADED = 3;
 const STATE_UPDATE_NOT_AVAILABLE = 4;
 const STATE_ERROR = 5;
 
-class Updater {
+class Updater extends EventEmitter {
   constructor(/**Fresh*/fresh) {
+    super();
     const self = this;
     self._fresh = fresh;
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
@@ -47,7 +49,7 @@ class Updater {
   set state(state) {
     const self = this;
     self._state = state;
-    self._fresh.emit('updateStateChange', self._state);
+    self.emit('updateStateChange', self._state);
   }
 
   get state() {

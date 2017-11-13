@@ -2,7 +2,6 @@ const {app} = require('electron');
 const fs = require('fs');
 const fsp = require('./fsp');
 const path = require('path');
-const {EventEmitter} = require('events');
 
 let compareVersion = null;
 const getCompareVersion = function () {
@@ -50,9 +49,8 @@ const getCrypto = function () {
  * @property {string} sha256
  */
 
-class Fresh extends EventEmitter {
+class Fresh {
   constructor(/**FreshConfig*/pkgConfig, /**string*/rootPath) {
-    super();
     const self = this;
     self.id = pkgConfig.id;
     self.version = '1.0';
