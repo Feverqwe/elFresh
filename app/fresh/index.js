@@ -19,6 +19,7 @@ const getCrypto = function () {
  * @property {string} id
  * @property {string} fallbackBundlePath
  * @property {string} updateUrl
+ * @property {number} autoUpdateDelay
  * @property {number} autoUpdateInterval
  */
 
@@ -80,7 +81,7 @@ class Fresh extends EventEmitter {
    */
   _autoUpdate() {
     const self = this;
-    return new Promise(resolve => setTimeout(resolve, 1000)).then(function () {
+    return new Promise(resolve => setTimeout(resolve, self._pkgConfig.autoUpdateDelay)).then(function () {
       const now = parseInt(Date.now() / 1000);
       if (
         typeof self._config.lastUpdate !== 'number' ||
