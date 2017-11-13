@@ -21,12 +21,31 @@ const fsMkdirs = require('fs-extra/lib/mkdirs');
  * @property {string} version
  */
 
+const STATE_IDLE = 0;
+const STATE_CHECKING_FOR_UPDATE = 1;
+const STATE_UPDATE_AVAILABLE = 2;
+const STATE_UPDATE_DOWNLOADED = 3;
+const STATE_UPDATE_NOT_AVAILABLE = 4;
+const STATE_ERROR = 5;
+
 class Updater {
   constructor(/**Fresh*/fresh) {
     const self = this;
     self._fresh = fresh;
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
     self._updatePromise = null;
+    self._state = STATE_IDLE;
+  }
+
+  set state(state) {
+    const self = this;
+    self._state = state;
+    self._fresh.emit('updateStateChange', self._state);
+  }
+
+  get state() {
+    const self = this;
+    return self._state;
   }
 
   update() {
@@ -46,8 +65,13 @@ class Updater {
    */
   _update() {
     const self = this;
+    self.state = STATE_CHECKING_FOR_UPDATE;
     return self._checkUpdate(self._fresh._pkgConfig, self._fresh._bundle).then(function (updateInfo) {
-      if (!updateInfo) return null;
+      if (!updateInfo) {
+        self.state = STATE_UPDATE_NOT_AVAILABLE;
+        return null;
+      }
+      self.state = STATE_UPDATE_AVAILABLE;
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       const extractPath = path.join(self._fresh._freshPath, 'tmp', 'bundle_' + updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
@@ -66,10 +90,12 @@ class Updater {
           return self._clearBundles(updateInfo.version);
         });
       }).then(function () {
+        self.state = STATE_UPDATE_DOWNLOADED;
         return updateInfo;
       });
     }).catch(function (err) {
       console.error('update error', err);
+      self.state = STATE_ERROR;
       return null;
     });
   }
