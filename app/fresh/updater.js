@@ -87,7 +87,7 @@ class Updater extends EventEmitter {
         return self._downloadUpdate(updateInfo).then(function (filename) {
           return self._extractAndReadZip(filename, extractPath).then(function (files) {
             return fsp.unlink(filename).then(function () {
-              return self._setLastBundle(extractPath, bundlePath);
+              return self._moveBundle(extractPath, bundlePath);
             }).then(function () {
               return self._writeVerify(files, bundlePath, updateInfo.sha256);
             });
@@ -407,7 +407,7 @@ class Updater extends EventEmitter {
    * @param {string} bundlePath
    * @return {Promise}
    */
-  _setLastBundle(extractPath, bundlePath) {
+  _moveBundle(extractPath, bundlePath) {
     return fsRemove.remove(bundlePath).then(function () {
       return fsMkdirs.ensureDir(bundlePath);
     }).then(function () {
