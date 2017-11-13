@@ -331,6 +331,7 @@ class Updater {
           const [stat, sha256] = results;
           _files.push({
             path: name,
+            size: stat.size,
             etag: self._fresh._getETag(stat),
             sha256: sha256
           });

@@ -43,6 +43,7 @@ const getCrypto = function () {
 /**
  * @typedef {{}} FreshVerifyFile
  * @property {string} path
+ * @property {number} size
  * @property {string} etag
  * @property {string} sha256
  */
@@ -189,15 +190,17 @@ class Fresh {
       const etag = self._getETag(stat);
       if (file.etag !== etag) {
         if (stat.size > 10 * 1024 * 1024) {
-          throw new Error('File etag is incorrect');
-        }
-        let sha256 = getCrypto().createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
-        if (file.sha256 === sha256) {
-          file.etag = etag;
-          saveVerify = true;
+          if (file.size !== stat.size) {
+            throw new Error('File size is incorrect');
+          }
         } else {
-          throw new Error('File hash is incorrect');
+          let sha256 = getCrypto().createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
+          if (file.sha256 !== sha256) {
+            throw new Error('File hash is incorrect');
+          }
         }
+        file.etag = etag;
+        saveVerify = true;
       }
     });
     if (saveVerify) {
