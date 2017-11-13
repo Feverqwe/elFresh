@@ -178,7 +178,7 @@ class Updater {
         return self._downloadFile(url, filename);
       }).catch(function (err) {
         if (retryCount-- > 0) {
-          if (['ECONNRESET', 'ETIMEDOUT', 'FILE_IS_NOT_FULL'].indexOf(err.code) !== -1) {
+          if (['ECONNRESET', 'ETIMEDOUT'].indexOf(err.code) !== -1) {
             console.error('Retry downloading', url, err);
             return new Promise(function(resolve) {
               setTimeout(resolve, 250);
