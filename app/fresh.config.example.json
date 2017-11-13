@@ -2,6 +2,5 @@
   "id": "test",
   "fallbackBundlePath": "./bundle",
   "updateUrl": "http://localhost/update.json",
-  "autoUpdate": true,
   "autoUpdateInterval": 21600
 }

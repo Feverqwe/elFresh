@@ -18,7 +18,6 @@ const getCrypto = function () {
  * @property {string} id
  * @property {string} fallbackBundlePath
  * @property {string} updateUrl
- * @property {boolean} autoUpdate
  * @property {number} autoUpdateInterval
  */
 
@@ -66,9 +65,7 @@ class Fresh {
     self._loadConfig();
     self._bundle = self._getBundle();
     self._updater = null;
-    if (pkgConfig.autoUpdate) {
-      self._autoUpdate();
-    }
+    self._autoUpdate();
   }
 
   get bundlePath() {
@@ -96,7 +93,7 @@ class Fresh {
         });
       }
     }).catch(function (err) {
-      console.error('_autoUpdate error', err);
+      console.error('autoUpdate error', err);
     });
   }
 

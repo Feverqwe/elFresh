@@ -26,15 +26,28 @@ class Updater {
     const self = this;
     self._fresh = fresh;
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
+    self._updatePromise = null;
+  }
+
+  update() {
+    const self = this;
+    if (self._updatePromise) {
+      return self._updatePromise;
+    } else {
+      return self._updatePromise = self._update().then(function (result) {
+        self._updatePromise = null;
+        return result;
+      });
+    }
   }
 
   /**
    * @return {Promise}
    */
-  update() {
+  _update() {
     const self = this;
     return self._checkUpdate(self._fresh._pkgConfig, self._fresh._bundle).then(function (updateInfo) {
-      if (!updateInfo) return;
+      if (!updateInfo) return null;
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       const extractPath = path.join(self._fresh._freshPath, 'tmp', 'bundle_' + updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
@@ -52,9 +65,12 @@ class Updater {
         }).then(function () {
           return self._clearBundles(updateInfo.version);
         });
+      }).then(function () {
+        return updateInfo;
       });
     }).catch(function (err) {
       console.error('update error', err);
+      return null;
     });
   }
 
