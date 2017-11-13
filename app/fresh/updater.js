@@ -43,7 +43,7 @@ class Updater {
             return fsp.unlink(filename).then(function () {
               return self._setLastBundle(extractPath, bundlePath);
             }).then(function () {
-              return self._writeVerify(files, bundlePath);
+              return self._writeVerify(files, bundlePath, updateInfo.sha256);
             });
           });
         }).then(function () {
@@ -91,7 +91,7 @@ class Updater {
       if (self._fresh._config.bundleVersion !== updateInfo.version) {
         throw new Error('bundleVersion is not equal');
       }
-      self._fresh._verifyBundle(bundlePath);
+      self._fresh._verifyBundle(bundlePath, updateInfo.sha256);
     });
   }
 
@@ -315,9 +315,10 @@ class Updater {
   /**
    * @param {string[]} files
    * @param {string} extractPath
+   * @param {string} packageHash
    * @return {Promise}
    */
-  _writeVerify(files, extractPath) {
+  _writeVerify(files, extractPath, packageHash) {
     const self = this;
     const _files = [];
     let promise = Promise.resolve();
@@ -340,6 +341,7 @@ class Updater {
     });
     return promise.then(function () {
       const verify = {
+        packageHash: packageHash,
         _files: _files
       };
       return fsp.writeFile(path.join(extractPath, '_verify.json'), JSON.stringify(verify));
