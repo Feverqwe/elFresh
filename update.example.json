@@ -1,0 +1,9 @@
+{
+  "app": {
+    "test": {
+      "sha256": "",
+      "url": "http://localhost/bundle.zip",
+      "version": "1.0"
+    }
+  }
+}

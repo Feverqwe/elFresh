@@ -1,0 +1,7 @@
+node_modules
+.idea
+/dist
+/appBg/dist/*
+/appUi/dist/*
+/app/bundle/*
+/app/fresh.config.json

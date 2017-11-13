@@ -1,0 +1,28 @@
+{
+  "name": "freshElectron",
+  "version": "1.0.0",
+  "description": "",
+  "build": {
+    "appId": "electron.freshElectron",
+    "productName": "freshElectron",
+    "compression": "maximum",
+    "electronVersion": "1.7.9",
+    "win": {
+      "target": [
+        "dir",
+        "7z"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "files": [
+      "!**/node_modules/sqlite3/{bin,build,deps}",
+      "!**/node_modules/sqlite3/lib/binding/{node-*,electron-*-win32-x64}",
+      "!**/*{.jsx,.less}"
+    ]
+  }
+}

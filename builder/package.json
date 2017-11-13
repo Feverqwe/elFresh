@@ -1,0 +1,17 @@
+{
+  "name": "Builder",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "electron ../app/main",
+    "buildWin": "build --ia32 --project ../",
+    "buildMac": "build --mac --project ../",
+    "rebuild": "electron-rebuild --module-dir ../app"
+  },
+  "devDependencies": {
+    "electron": "1.7.9",
+    "electron-builder": "^19.27.3",
+    "electron-rebuild": "^1.6.0",
+    "gulp": "^3.9.1"
+  }
+}
