@@ -203,7 +203,7 @@ class Fresh {
         if (file.size !== stat.size) {
           throw new Error('File size is incorrect');
         }
-        if (stat.size < 5 * 1024 * 1024) {
+        if (stat.size < 10 * 1024 * 1024) {
           let sha256 = getCrypto().createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
           if (file.sha256 !== sha256) {
             throw new Error('File hash is incorrect');
