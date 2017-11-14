@@ -218,14 +218,12 @@ class Fresh {
     }
   }
 
-  startBundle(_require = require, _exports = exports, _module = module) {
+  startBundle(_require = require) {
     const self = this;
     const bundle = self._bundle;
     if (bundle) {
       bundle.meta.background.scripts.forEach(function (script) {
-        const filename = path.join(bundle.path, script);
-        const dirname = path.dirname(filename);
-        new Function('require', 'exports', 'module', '__filename', '__dirname', ''+fs.readFileSync(filename))(_require, _exports, _module, filename, dirname);
+        _require(path.join(bundle.path, script));
       });
     }
   }
