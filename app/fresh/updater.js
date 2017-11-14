@@ -1,3 +1,4 @@
+const debug = require('debug')('fresh:updater');
 const fs = require('fs');
 const path = require('path');
 const popsicle = require('popsicle');
@@ -103,7 +104,7 @@ class Updater extends EventEmitter {
         return updateInfo;
       });
     }).catch(function (err) {
-      console.error('update error', err);
+      debug('update error', err);
       self.state = STATE_ERROR;
       return null;
     });
@@ -127,7 +128,7 @@ class Updater extends EventEmitter {
         return updateInfo;
       }
     }).catch(function (err) {
-      console.error('checkUpdate error', err);
+      debug('checkUpdate error %o', err);
     });
   }
 
@@ -220,7 +221,7 @@ class Updater extends EventEmitter {
       return fsp.stat(filename).then(function (stat) {
         return self._downloadFile(url, filename, stat).catch(function (err) {
           if (err.res && err.res.status === 416) {
-            console.error('Unable to resume download!', err);
+            debug('Unable to resume download!', err);
             return self._downloadFile(url, filename);
           }
           throw err;
@@ -230,7 +231,7 @@ class Updater extends EventEmitter {
       }).catch(function (err) {
         if (retryCount-- > 0) {
           if (['ECONNRESET', 'ETIMEDOUT'].indexOf(err.code) !== -1) {
-            console.error('Retry downloading', url, err);
+            debug('Retry downloading', url, err);
             return new Promise(function(resolve) {
               setTimeout(resolve, 250);
             }).then(tryContinue);
@@ -397,7 +398,7 @@ class Updater extends EventEmitter {
       };
       return fsp.writeFile(path.join(extractPath, '_verify.json'), JSON.stringify(verify));
     }).catch(function (err) {
-      console.error('_writeVerify error', err);
+      debug('_writeVerify error', err);
       throw err;
     });
   }
@@ -432,7 +433,7 @@ class Updater extends EventEmitter {
         }
       }));
     }).catch(function (err) {
-      console.error('_clearBundles error', err);
+      debug('_clearBundles error', err);
     });
   }
 }

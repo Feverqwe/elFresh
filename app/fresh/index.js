@@ -1,3 +1,4 @@
+const debug = require('debug')('fresh');
 const {app} = require('electron');
 const fs = require('fs');
 const fsp = require('./fsp');
@@ -94,7 +95,7 @@ class Fresh {
         });
       }
     }).catch(function (err) {
-      console.error('autoUpdate error', err);
+      debug('autoUpdate error', err);
     });
   }
 
@@ -126,7 +127,7 @@ class Fresh {
         }
         bundle = self._loadBundle(path.join(self._bundlesPath, self._config.bundleVersion));
       } catch (err) {
-        console.error('load user bundle error', self._config.bundleVersion, err.message);
+        debug('load user bundle error', self._config.bundleVersion, err.message);
       }
     }
     if (!bundle) {
@@ -139,18 +140,18 @@ class Fresh {
             bundle = self._loadBundle(path.join(self._bundlesPath, name));
             return true;
           } catch (err) {
-            console.error('load preview user bundle error', name, err.message);
+            debug('load preview user bundle error', name, err.message);
           }
         });
       } catch (err) {
-        console.error('find preview user bundles error', err.message);
+        debug('find preview user bundles error', err.message);
       }
     }
     if (!bundle) {
       try {
         bundle = self._loadBundle(self._fallbackBundlePath, true);
       } catch (err) {
-        console.error('load local bundle error', err.message);
+        debug('load local bundle error', err.message);
       }
     }
     return bundle;

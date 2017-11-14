@@ -9,6 +9,7 @@
   "main": "main.js",
   "dependencies": {
     "compare-versions": "^3.1.0",
+    "debug": "^3.1.0",
     "fs-extra": "^4.0.2",
     "popsicle": "^9.1.0",
     "unzip": "^0.1.11"
