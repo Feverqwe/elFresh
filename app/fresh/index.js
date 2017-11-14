@@ -14,6 +14,11 @@ const getCrypto = function () {
   return crypto || (crypto = require('crypto'));
 };
 
+let fsMkdirs = null;
+const getFsMkdirs = function () {
+  return fsMkdirs || (fsMkdirs = require('fs-extra/lib/mkdirs'));
+};
+
 /**
  * @typedef {{}} FreshConfig
  * @property {string} id
@@ -111,7 +116,9 @@ class Fresh {
    */
   _saveConfig() {
     const self = this;
-    return fsp.writeFile(self._configFilename, JSON.stringify(self._config));
+    return getFsMkdirs().ensureDir(self._freshPath).then(function () {
+      return fsp.writeFile(self._configFilename, JSON.stringify(self._config));
+    });
   }
 
   /**
