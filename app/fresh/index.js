@@ -200,11 +200,10 @@ class Fresh {
       const stat = fs.statSync(filename);
       const etag = self._getETag(stat);
       if (file.etag !== etag) {
-        if (stat.size > 10 * 1024 * 1024) {
-          if (file.size !== stat.size) {
-            throw new Error('File size is incorrect');
-          }
-        } else {
+        if (file.size !== stat.size) {
+          throw new Error('File size is incorrect');
+        }
+        if (stat.size < 5 * 1024 * 1024) {
           let sha256 = getCrypto().createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
           if (file.sha256 !== sha256) {
             throw new Error('File hash is incorrect');
