@@ -132,7 +132,7 @@ class Updater extends EventEmitter {
       /**@type FreshBundleUpdate*/
       const meta = JSON.parse(res.body);
       const updateInfo = meta.app[pkgConfig.id];
-      if (!bundle || compareVersion(updateInfo.version, bundle.meta && bundle.meta.version) > 0) {
+      if (!bundle || !bundle.meta || compareVersion(updateInfo.version, bundle.meta.version) > 0) {
         return updateInfo;
       }
     }).catch(function (err) {
