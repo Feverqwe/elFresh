@@ -1,6 +1,7 @@
 const debug = require('debug')('fresh:updater');
 const fs = require('fs');
 const path = require('path');
+const qs = require('querystring');
 const popsicle = require('popsicle');
 const compareVersion = require('compare-versions');
 const fsp = require('./fsp');
@@ -10,6 +11,7 @@ const fsRemove = require('fs-extra/lib/remove');
 const fsMove = require('fs-extra/lib/move');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
+const appVersion = require('electron').app.getVersion();
 
 /**
  * @typedef {{}} FreshBundleUpdate
@@ -117,14 +119,20 @@ class Updater extends EventEmitter {
    */
   _checkUpdate(pkgConfig, bundle) {
     const self = this;
-    return popsicle.get(pkgConfig.updateUrl).then(function (res) {
+    const bundleVersion = bundle && bundle.meta && bundle.meta.version || '';
+    return popsicle.get(pkgConfig.updateUrl + '?' + qs.stringify({
+      id: self._fresh.id,
+      appVersion: appVersion,
+      bundleVersion: bundleVersion,
+      freshVersion: self._fresh.version
+    })).then(function (res) {
       if (res.status !== 200) {
         throw new Error("Bad status");
       }
       /**@type FreshBundleUpdate*/
       const meta = JSON.parse(res.body);
       const updateInfo = meta.app[pkgConfig.id];
-      if (!bundle || compareVersion(updateInfo.version, bundle.meta.version) > 0) {
+      if (!bundle || compareVersion(updateInfo.version, bundle.meta && bundle.meta.version) > 0) {
         return updateInfo;
       }
     }).catch(function (err) {
