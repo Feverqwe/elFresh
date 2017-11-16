@@ -80,6 +80,11 @@ class Fresh {
     return self._bundle && self._bundle.path || '';
   }
 
+  get bundleVersion() {
+    const self = this;
+    return self._bundle && self._bundle.meta && self._bundle.meta.version || '';
+  }
+
   /**
    * @return {Promise}
    */
