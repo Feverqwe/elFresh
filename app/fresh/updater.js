@@ -132,6 +132,9 @@ class Updater extends EventEmitter {
       /**@type FreshBundleUpdate*/
       const meta = JSON.parse(res.body);
       const updateInfo = meta.app[pkgConfig.id];
+      if (!updateInfo) {
+        throw new Error('Package id is not found!');
+      }
       if (!bundle || !bundle.meta || compareVersion(updateInfo.version, bundle.meta.version) > 0) {
         return updateInfo;
       }
