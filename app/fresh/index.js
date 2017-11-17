@@ -144,7 +144,7 @@ class Fresh {
     if (!bundle) {
       let files = [];
       try {
-        files = fs.readdirSync(self._bundlesPath);
+        files.push.apply(files, fs.readdirSync(self._bundlesPath));
       } catch (err) {}
       files.sort(getCompareVersion());
       files.reverse();
