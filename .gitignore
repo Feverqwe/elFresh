@@ -5,3 +5,4 @@ node_modules
 /appUi/dist/*
 /app/bundle/*
 /app/fresh.config.json
+package-lock.json

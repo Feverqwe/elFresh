@@ -4,8 +4,13 @@
   "description": "",
   "scripts": {
     "start": "electron ../app/main",
-    "buildWin": "build --ia32 --project ../",
-    "buildMac": "build --mac --project ../",
+    "clearBundle": "gulp --cwd ../appBg clearBundle",
+    "buildBg": "gulp --cwd ../appBg",
+    "buildUi": "gulp --cwd ../appUi",
+    "zipFreshBundle": "gulp --cwd ../appBg zipFreshBundle",
+    "buildBundle": "npm run clearBundle && npm run buildBg && npm run buildUi && npm run zipFreshBundle",
+    "buildWin": "npm run buildBundle && build --ia32 --project ../",
+    "buildMac": "npm run buildBundle && build --mac --project ../",
     "rebuild": "electron-rebuild --module-dir ../app"
   },
   "devDependencies": {

@@ -4,7 +4,12 @@
   "description": "",
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "del": "^3.0.0",
+    "gulp-filter": "^5.0.1",
+    "gulp-hashsum": "^1.1.0",
+    "gulp-zip": "^4.0.0"
+  },
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.2.0",
