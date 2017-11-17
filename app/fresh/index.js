@@ -133,31 +133,29 @@ class Fresh {
     const self = this;
     let bundle = null;
     if (!bundle) {
-      try {
-        if (!self._config.bundleVersion) {
-          throw new Error('bundleVersion is empty');
+      if (self._config.bundleVersion) {
+        try {
+          bundle = self._loadBundle(path.join(self._bundlesPath, self._config.bundleVersion));
+        } catch (err) {
+          debug('load user bundle error', self._config.bundleVersion, err.message);
         }
-        bundle = self._loadBundle(path.join(self._bundlesPath, self._config.bundleVersion));
-      } catch (err) {
-        debug('load user bundle error', self._config.bundleVersion, err.message);
       }
     }
     if (!bundle) {
+      let files = [];
       try {
-        const files = fs.readdirSync(self._bundlesPath);
-        files.sort(getCompareVersion());
-        files.reverse();
-        files.some(function (name) {
-          try {
-            bundle = self._loadBundle(path.join(self._bundlesPath, name));
-            return true;
-          } catch (err) {
-            debug('load preview user bundle error', name, err.message);
-          }
-        });
-      } catch (err) {
-        debug('find preview user bundles error', err.message);
-      }
+        files = fs.readdirSync(self._bundlesPath);
+      } catch (err) {}
+      files.sort(getCompareVersion());
+      files.reverse();
+      files.some(function (name) {
+        try {
+          bundle = self._loadBundle(path.join(self._bundlesPath, name));
+          return true;
+        } catch (err) {
+          debug('load preview user bundle error', name, err.message);
+        }
+      });
     }
     if (!bundle) {
       try {
@@ -165,6 +163,9 @@ class Fresh {
       } catch (err) {
         debug('load local bundle error', err.message);
       }
+    }
+    if (bundle) {
+      debug('Loaded bundle', bundle.path, bundle.meta.version);
     }
     return bundle;
   }

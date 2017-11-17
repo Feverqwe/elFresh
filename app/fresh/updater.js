@@ -78,7 +78,7 @@ class Updater extends EventEmitter {
   _update() {
     const self = this;
     self.state = STATE_CHECKING_FOR_UPDATE;
-    return self._checkUpdate(self._fresh._pkgConfig, self._fresh._bundle).then(function (updateInfo) {
+    return self._checkUpdate(self._fresh._pkgConfig, self._fresh.bundleVersion).then(function (updateInfo) {
       if (!updateInfo) {
         self.state = STATE_UPDATE_NOT_AVAILABLE;
         return null;
@@ -99,7 +99,7 @@ class Updater extends EventEmitter {
           self._fresh._config.bundleVersion = updateInfo.version;
           return self._fresh._saveConfig();
         }).then(function () {
-          return self._clearBundles(updateInfo.version);
+          return self._clearBundles([updateInfo.version, self._fresh.bundleVersion]);
         });
       }).then(function () {
         self.state = STATE_UPDATE_DOWNLOADED;
@@ -114,12 +114,11 @@ class Updater extends EventEmitter {
 
   /**
    * @param {FreshConfig} pkgConfig
-   * @param {FreshBundle|null} bundle
+   * @param {string} bundleVersion
    * @return {Promise.<FreshBundleUpdateInfo|null>}
    */
-  _checkUpdate(pkgConfig, bundle) {
+  _checkUpdate(pkgConfig, bundleVersion) {
     const self = this;
-    const bundleVersion = bundle && bundle.meta && bundle.meta.version || '';
     return popsicle.get(pkgConfig.updateUrl + '?' + qs.stringify({
       id: self._fresh.id,
       appVersion: appVersion,
@@ -135,7 +134,7 @@ class Updater extends EventEmitter {
       if (!updateInfo) {
         throw new Error('Package id is not found!');
       }
-      if (!bundle || !bundle.meta || compareVersion(updateInfo.version, bundle.meta.version) > 0) {
+      if (!bundleVersion || compareVersion(updateInfo.version, bundleVersion) > 0) {
         return updateInfo;
       }
     }).catch(function (err) {
@@ -428,17 +427,17 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @param {string} currentVersion
+   * @param {string[]} exclude
    * @return {Promise}
    */
-  _clearBundles(currentVersion) {
+  _clearBundles(exclude) {
     const self = this;
     const bundlesPath = self._fresh._bundlesPath;
     return fsp.readdir(bundlesPath).then(function (files) {
       files.sort(compareVersion);
       files.reverse();
       return Promise.all(files.slice(3).map(function (name) {
-        if (name !== currentVersion) {
+        if (exclude.indexOf(name) === -1) {
           const filename = path.join(bundlesPath, name);
           return fsRemove.remove(filename);
         }
