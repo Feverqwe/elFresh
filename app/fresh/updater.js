@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const qs = require('querystring');
 const popsicle = require('popsicle');
-const compareVersion = require('compare-versions');
+const compareVersions = require('compare-versions');
 const fsp = require('./fsp');
 const crypto = require('crypto');
 const unzip = require('unzip');
@@ -134,7 +134,7 @@ class Updater extends EventEmitter {
       if (!updateInfo) {
         throw new Error('Package id is not found!');
       }
-      if (!bundleVersion || compareVersion(updateInfo.version, bundleVersion) > 0) {
+      if (!bundleVersion || compareVersions(updateInfo.version, bundleVersion) > 0) {
         return updateInfo;
       }
     }).catch(function (err) {
@@ -434,7 +434,7 @@ class Updater extends EventEmitter {
     const self = this;
     const bundlesPath = self._fresh._bundlesPath;
     return fsp.readdir(bundlesPath).then(function (files) {
-      files.sort(compareVersion);
+      files.sort(compareVersions);
       files.reverse();
       return Promise.all(files.slice(3).map(function (name) {
         if (exclude.indexOf(name) === -1) {

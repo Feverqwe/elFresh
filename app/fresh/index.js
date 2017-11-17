@@ -3,11 +3,7 @@ const {app} = require('electron');
 const fs = require('fs');
 const fsp = require('./fsp');
 const path = require('path');
-
-let compareVersion = null;
-const getCompareVersion = function () {
-  return compareVersion || (compareVersion = require('compare-versions'));
-};
+const compareVersions = require('compare-versions');
 
 let crypto = null;
 const getCrypto = function () {
@@ -82,7 +78,7 @@ class Fresh {
 
   get bundleVersion() {
     const self = this;
-    return self._bundle && self._bundle.meta && self._bundle.meta.version || '';
+    return self._bundle && self._bundle.meta.version || '';
   }
 
   /**
@@ -142,11 +138,11 @@ class Fresh {
       }
     }
     if (!bundle) {
-      let files = [];
+      const files = [];
       try {
         files.push.apply(files, fs.readdirSync(self._bundlesPath));
       } catch (err) {}
-      files.sort(getCompareVersion());
+      files.sort(compareVersions);
       files.reverse();
       files.some(function (name) {
         try {
@@ -157,16 +153,14 @@ class Fresh {
         }
       });
     }
-    if (!bundle) {
-      try {
-        bundle = self._loadBundle(self._fallbackBundlePath, true);
-      } catch (err) {
-        debug('load local bundle error', err.message);
-      }
+
+    const fallbackBundle = self._loadBundle(self._fallbackBundlePath, true);
+    if (!bundle || compareVersions(fallbackBundle.meta.version, bundle.meta.version) >= 0) {
+      bundle = fallbackBundle;
     }
-    if (bundle) {
-      debug('Loaded bundle', bundle.path, bundle.meta.version);
-    }
+
+    debug('Loaded bundle', bundle.path, bundle.meta.version);
+
     return bundle;
   }
 
@@ -181,6 +175,9 @@ class Fresh {
     const meta = JSON.parse(fs.readFileSync(path.join(bundlePath, 'meta.json')));
     if (!skipVerify) {
       self._verifyBundle(bundlePath);
+    }
+    if (!meta.version || !meta.background.scripts.length) {
+      throw new Error('Meta is incorrect');
     }
     return {
       path: bundlePath,
