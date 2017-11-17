@@ -154,12 +154,22 @@ class Fresh {
       });
     }
 
-    const fallbackBundle = self._loadBundle(self._fallbackBundlePath, true);
-    if (!bundle || compareVersions(fallbackBundle.meta.version, bundle.meta.version) >= 0) {
-      bundle = fallbackBundle;
+    let fallbackBundle = null;
+    try {
+      fallbackBundle = self._loadBundle(self._fallbackBundlePath, true);
+    } catch (err) {
+      debug('load local bundle error', err.message);
     }
 
-    debug('Loaded bundle', bundle.path, bundle.meta.version);
+    if (fallbackBundle) {
+      if (!bundle || compareVersions(fallbackBundle.meta.version, bundle.meta.version) >= 0) {
+        bundle = fallbackBundle;
+      }
+    }
+
+    if (bundle) {
+      debug('Loaded bundle', bundle.path, bundle.meta.version);
+    }
 
     return bundle;
   }
