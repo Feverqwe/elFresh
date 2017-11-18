@@ -276,7 +276,6 @@ class Updater extends EventEmitter {
    */
   _downloadFile(url, filename, stat) {
     const self = this;
-    let stream = null;
 
     let headers = {};
     if (stat) {
@@ -321,7 +320,7 @@ class Updater extends EventEmitter {
           options.flags = 'a';
         }
 
-        stream = res.body.pipe(fsfs.createWriteStream(filename, options))
+        res.body.pipe(fsfs.createWriteStream(filename, options))
           .on('error', function (err) {
             reject(err);
           })
@@ -332,8 +331,8 @@ class Updater extends EventEmitter {
         res.body.resume();
       });
     }).catch(function (err) {
-      if (stream) {
-        stream.destroy(err);
+      if (!request.aborted) {
+        request.abort();
       }
       throw err;
     });
