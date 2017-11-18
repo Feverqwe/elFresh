@@ -428,7 +428,7 @@ class Updater extends EventEmitter {
           self._getHash(filename, 'sha256')
         ]).then(function (results) {
           const [stat, sha256] = results;
-          if (sha256 !== file.sha256) {
+          if (sha256 !== file.sha256 || stat.size !== file.size) {
             throw new Error('Extracted file is broken');
           }
           file.etag = self._fresh._getETag(stat);
