@@ -330,11 +330,6 @@ class Updater extends EventEmitter {
 
         res.body.resume();
       });
-    }).catch(function (err) {
-      if (!request.aborted) {
-        request.abort();
-      }
-      throw err;
     });
   }
 
