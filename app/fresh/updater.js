@@ -425,6 +425,7 @@ class Updater extends EventEmitter {
     const self = this;
     const bundlesPath = self._fresh._bundlesPath;
     return fsfs.readdir(bundlesPath).then(function (files) {
+      files = files.filter(self._fresh._isValidVersion);
       files.sort(compareVersions);
       files.reverse();
       return Promise.all(files.slice(3).map(function (name) {

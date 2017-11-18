@@ -148,7 +148,7 @@ class Fresh {
 
     if (!bundle) {
       const version = self._config.bundleVersion;
-      if (version) {
+      if (version && self._isValidVersion(version)) {
         if (!fallbackBundle || compareVersions(version, fallbackBundle.meta.version) > 0) {
           try {
             bundle = self._loadBundle(path.join(self._bundlesPath, version));
@@ -162,7 +162,7 @@ class Fresh {
     if (!bundle) {
       const files = [];
       try {
-        files.push.apply(files, fs.readdirSync(self._bundlesPath));
+        files.push.apply(files, fs.readdirSync(self._bundlesPath).filter(self._isValidVersion));
       } catch (err) {}
       files.sort(compareVersions);
       files.reverse();
@@ -205,7 +205,7 @@ class Fresh {
     if (!skipVerify) {
       self._verifyBundle(bundlePath);
     }
-    if (!meta.version || !meta.background.scripts.length) {
+    if (!self._isValidVersion(meta.version) || !meta.background.scripts.length) {
       throw new Error('Meta is incorrect');
     }
     return {
@@ -284,6 +284,22 @@ class Fresh {
     const size = stat.size.toString(16);
 
     return size + '-' + mtime
+  }
+
+  /**
+   * From compare-versions
+   * @param {string} version
+   * @return {boolean}
+   */
+  _isValidVersion(version) {
+    if (typeof version !== 'string') {
+      return false;
+    }
+    const semver = /^v?(?:\d+)(\.(?:[x*]|\d+)(\.(?:[x*]|\d+)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?)?)?$/i;
+    if (!semver.test(version)) {
+      return false;
+    }
+    return true;
   }
 }
 
