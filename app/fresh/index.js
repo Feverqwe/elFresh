@@ -138,15 +138,27 @@ class Fresh {
   _getBundle() {
     const self = this;
     let bundle = null;
+
+    let fallbackBundle = null;
+    try {
+      fallbackBundle = self._loadBundle(self._fallbackBundlePath, true);
+    } catch (err) {
+      debug('load local bundle error', err.message);
+    }
+
     if (!bundle) {
-      if (self._config.bundleVersion) {
-        try {
-          bundle = self._loadBundle(path.join(self._bundlesPath, self._config.bundleVersion));
-        } catch (err) {
-          debug('load user bundle error', self._config.bundleVersion, err.message);
+      const version = self._config.bundleVersion;
+      if (version) {
+        if (!fallbackBundle || compareVersions(version, fallbackBundle.meta.version) > 0) {
+          try {
+            bundle = self._loadBundle(path.join(self._bundlesPath, version));
+          } catch (err) {
+            debug('load user bundle error', version, err.message);
+          }
         }
       }
     }
+
     if (!bundle) {
       const files = [];
       try {
@@ -154,21 +166,16 @@ class Fresh {
       } catch (err) {}
       files.sort(compareVersions);
       files.reverse();
-      files.some(function (name) {
-        try {
-          bundle = self._loadBundle(path.join(self._bundlesPath, name));
-          return true;
-        } catch (err) {
-          debug('load preview user bundle error', name, err.message);
+      files.some(function (version) {
+        if (!fallbackBundle || compareVersions(version, fallbackBundle.meta.version) > 0) {
+          try {
+            bundle = self._loadBundle(path.join(self._bundlesPath, version));
+            return true;
+          } catch (err) {
+            debug('load preview user bundle error', version, err.message);
+          }
         }
       });
-    }
-
-    let fallbackBundle = null;
-    try {
-      fallbackBundle = self._loadBundle(self._fallbackBundlePath, true);
-    } catch (err) {
-      debug('load local bundle error', err.message);
     }
 
     if (fallbackBundle) {
@@ -178,7 +185,9 @@ class Fresh {
     }
 
     if (bundle) {
-      debug('Loaded bundle', bundle.path, bundle.meta.version);
+      debug('Loaded bundle', bundle.path);
+    } else {
+      debug('Bundle is not loaded');
     }
 
     return bundle;
