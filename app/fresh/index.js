@@ -1,13 +1,17 @@
 const debug = require('debug')('fresh');
 const {app} = require('electron');
 const fs = require('fs');
-const fsp = require('./fsp');
 const path = require('path');
 const compareVersions = require('compare-versions');
 
 let crypto = null;
 const getCrypto = function () {
   return crypto || (crypto = require('crypto'));
+};
+
+let fsfs = null;
+const getFsfs = function () {
+  return fsfs || (fsfs = require('fs-extra/lib/fs'));
 };
 
 let fsMkdirs = null;
@@ -118,7 +122,7 @@ class Fresh {
   _saveConfig() {
     const self = this;
     return getFsMkdirs().ensureDir(self._freshPath).then(function () {
-      return fsp.writeFile(self._configFilename, JSON.stringify(self._config));
+      return getFsfs().writeFile(self._configFilename, JSON.stringify(self._config));
     });
   }
 
