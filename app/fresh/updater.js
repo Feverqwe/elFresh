@@ -290,9 +290,6 @@ class Updater extends EventEmitter {
     });
     request.on('progress', function () {
       self.emit('downloadProgress', {
-        uploadedBytes: request.uploadedBytes,
-        uploadLength: request.uploadLength,
-        uploaded: request.uploaded,
         downloadedBytes: request.downloadedBytes,
         downloadLength: request.downloadLength,
         downloaded: request.downloaded,
