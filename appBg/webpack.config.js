@@ -13,7 +13,9 @@ module.exports = {
   target: 'electron-main',
   plugins: [
     new CleanWebpackPlugin('dist'),
-    new UglifyJSPlugin(),
+    new UglifyJSPlugin({
+      sourceMap: true
+    }),
     new SourceMapDevToolPlugin({
       filename: '[file].map'
     }),
