@@ -211,8 +211,18 @@ class Updater extends EventEmitter {
    * @return {Promise.<string>}
    */
   _getHash(filename, alg) {
+    const self = this;
+    return self._getStreamHash(fsfs.createReadStream(filename), alg);
+  }
+
+  /**
+   * @param {Readable} stream
+   * @param {string} alg
+   * @return {Promise.<string>}
+   */
+  _getStreamHash(stream, alg) {
     return new Promise(function (resolve, reject) {
-      fsfs.createReadStream(filename)
+      stream
         .pipe(crypto.createHash(alg).setEncoding('hex'))
         .on('error', function (err) {
           reject(err);
@@ -354,19 +364,29 @@ class Updater extends EventEmitter {
    * @return {Promise.<string[]>}
    */
   _getZipFiles(stream) {
+    const self = this;
     return new Promise(function (resolve, reject) {
       const files = [];
       return stream
         .pipe(unzip.Parse())
         .on('entry', function (entry) {
           if (entry.type === 'File') {
-            files.push(entry.path);
+            const promise = self._getStreamHash(entry, 'sha256')
+              .then(function (sha256) {
+                return {
+                  path: entry.path,
+                  size: entry.size,
+                  sha256: sha256
+                };
+              });
+            files.push(promise);
+          } else {
+            entry.autodrain();
           }
-          entry.autodrain();
         }).on('error', function (err) {
           reject(err);
         }).on('close', function () {
-          resolve(files);
+          resolve(Promise.all(files));
         });
     });
   }
@@ -391,7 +411,7 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @param {string[]} files
+   * @param {{path:string,size:number,sha256:string}[]} files
    * @param {string} extractPath
    * @param {string} packageHash
    * @return {Promise}
@@ -400,20 +420,19 @@ class Updater extends EventEmitter {
     const self = this;
     const _files = [];
     let promise = Promise.resolve();
-    files.forEach(function (name) {
+    files.forEach(function (file) {
       promise = promise.then(function () {
-        const filename = path.join(extractPath, name);
+        const filename = path.join(extractPath, file.path);
         return Promise.all([
           fsfs.stat(filename),
           self._getHash(filename, 'sha256')
         ]).then(function (results) {
           const [stat, sha256] = results;
-          _files.push({
-            path: name,
-            size: stat.size,
-            etag: self._fresh._getETag(stat),
-            sha256: sha256
-          });
+          if (sha256 !== file.sha256) {
+            throw new Error('Extracted file is broken');
+          }
+          file.etag = self._fresh._getETag(stat);
+          _files.push(file);
         });
       });
     });
