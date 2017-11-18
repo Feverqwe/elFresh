@@ -53,7 +53,7 @@ class Updater extends EventEmitter {
   set state(state) {
     const self = this;
     self._state = state;
-    self.emit('updateStateChange', self._state);
+    self.emit('stateChange', self._state);
   }
 
   /**
@@ -273,12 +273,24 @@ class Updater extends EventEmitter {
       headers['Range'] = 'bytes=' + stat.size + '-';
     }
 
-    return popsicle.request({
+    const request = popsicle.request({
       method: 'GET',
       url: url,
       headers: headers,
       transport: popsicle.createTransport({ type: 'stream' })
-    }).then(function (res) {
+    });
+    request.on('progress', function () {
+      self.emit('downloadProgress', {
+        uploadedBytes: request.uploadedBytes,
+        uploadLength: request.uploadLength,
+        uploaded: request.uploaded,
+        downloadedBytes: request.downloadedBytes,
+        downloadLength: request.downloadLength,
+        downloaded: request.downloaded,
+        completed: request.completed
+      });
+    });
+    return request.then(function (res) {
       if (
         (stat && res.status !== 206) ||
         (!stat && res.status !== 200)
