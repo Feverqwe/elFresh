@@ -1,12 +1,11 @@
 const debug = require('debug')('fresh:updater');
-const fs = require('fs');
 const path = require('path');
 const qs = require('querystring');
 const popsicle = require('popsicle');
 const compareVersions = require('compare-versions');
-const fsp = require('./fsp');
 const crypto = require('crypto');
 const unzip = require('unzip');
+const fsfs = require('fs-extra/lib/fs');
 const fsRemove = require('fs-extra/lib/remove');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
@@ -89,7 +88,7 @@ class Updater extends EventEmitter {
           return self._extractAndReadZip(filename, bundlePath).then(function (files) {
             return self._writeVerify(files, bundlePath, updateInfo.sha256);
           }).then(function () {
-            return fsp.unlink(filename);
+            return fsfs.unlink(filename);
           });
         }).then(function () {
           self._fresh._config.bundleVersion = updateInfo.version;
@@ -166,14 +165,14 @@ class Updater extends EventEmitter {
     const tmpFilename = filename + '.tmp';
 
     return fsMkdirs.ensureDir(self._tmpPath).then(function () {
-      return fsp.access(filename).catch(function () {
+      return fsfs.access(filename).catch(function () {
         return self._tryContinue(url, tmpFilename).then(function () {
-          return fsp.rename(tmpFilename, filename);
+          return fsfs.rename(tmpFilename, filename);
         });
       });
     }).then(function () {
       return self._compareHash(filename, 'sha256', sha256).catch(function (err) {
-        return fsp.unlink(filename).then(function () {
+        return fsfs.unlink(filename).then(function () {
           throw err;
         });
       });
@@ -204,7 +203,7 @@ class Updater extends EventEmitter {
    */
   _getHash(filename, alg) {
     return new Promise(function (resolve, reject) {
-      fs.createReadStream(filename)
+      fsfs.createReadStream(filename)
         .pipe(crypto.createHash(alg).setEncoding('hex'))
         .on('error', function (err) {
           reject(err);
@@ -224,7 +223,7 @@ class Updater extends EventEmitter {
     const self = this;
     let retryCount = 10;
     const tryContinue = function () {
-      return fsp.stat(filename).then(function (stat) {
+      return fsfs.stat(filename).then(function (stat) {
         return self._downloadFile(url, filename, stat).catch(function (err) {
           if (err.res && err.res.status === 416) {
             debug('Unable to resume download!', err);
@@ -291,7 +290,7 @@ class Updater extends EventEmitter {
           options.flags = 'a';
         }
 
-        stream = res.body.pipe(fs.createWriteStream(filename, options))
+        stream = res.body.pipe(fsfs.createWriteStream(filename, options))
           .on('error', function (err) {
             reject(err);
           })
@@ -319,7 +318,7 @@ class Updater extends EventEmitter {
     return fsRemove.remove(extractPath).then(function () {
       return fsMkdirs.ensureDir(extractPath);
     }).then(function () {
-      const stream = fs.createReadStream(filename);
+      const stream = fsfs.createReadStream(filename);
       return Promise.all([
         self._getZipFiles(stream),
         self._extractZip(stream, extractPath)
@@ -384,7 +383,7 @@ class Updater extends EventEmitter {
       promise = promise.then(function () {
         const filename = path.join(extractPath, name);
         return Promise.all([
-          fsp.stat(filename),
+          fsfs.stat(filename),
           self._getHash(filename, 'sha256')
         ]).then(function (results) {
           const [stat, sha256] = results;
@@ -402,7 +401,7 @@ class Updater extends EventEmitter {
         packageHash: packageHash,
         _files: _files
       };
-      return fsp.writeFile(path.join(extractPath, '_verify.json'), JSON.stringify(verify));
+      return fsfs.writeFile(path.join(extractPath, '_verify.json'), JSON.stringify(verify));
     }).catch(function (err) {
       debug('_writeVerify error', err);
       throw err;
@@ -416,7 +415,7 @@ class Updater extends EventEmitter {
   _clearBundles(exclude) {
     const self = this;
     const bundlesPath = self._fresh._bundlesPath;
-    return fsp.readdir(bundlesPath).then(function (files) {
+    return fsfs.readdir(bundlesPath).then(function (files) {
       files.sort(compareVersions);
       files.reverse();
       return Promise.all(files.slice(3).map(function (name) {
