@@ -47,17 +47,26 @@ class Updater extends EventEmitter {
     self.STATE_ERROR = STATE_ERROR;
   }
 
+  /**
+   * @param {number} state
+   */
   set state(state) {
     const self = this;
     self._state = state;
     self.emit('updateStateChange', self._state);
   }
 
+  /**
+   * @return {number}
+   */
   get state() {
     const self = this;
     return self._state;
   }
 
+  /**
+   * @return {Promise.<FreshBundleUpdateInfo|null>}
+   */
   update() {
     const self = this;
     if (self._updatePromise) {
@@ -71,7 +80,7 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @return {Promise}
+   * @return {Promise.<FreshBundleUpdateInfo|null>}
    */
   _update() {
     const self = this;

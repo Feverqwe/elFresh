@@ -75,11 +75,17 @@ class Fresh {
     self._autoUpdate();
   }
 
+  /**
+   * @return {string}
+   */
   get bundlePath() {
     const self = this;
     return self._bundle && self._bundle.path || '';
   }
 
+  /**
+   * @return {string}
+   */
   get bundleVersion() {
     const self = this;
     return self._bundle && self._bundle.meta.version || '';
@@ -235,6 +241,9 @@ class Fresh {
     }
   }
 
+  /**
+   * @param {function} [_require]
+   */
   startBundle(_require = require) {
     const self = this;
     const bundle = self._bundle;
