@@ -254,7 +254,7 @@ class Updater extends EventEmitter {
         return self._downloadFile(url, filename);
       }).catch(function (err) {
         if (retryCount-- > 0) {
-          if (['ECONNRESET', 'ETIMEDOUT'].indexOf(err.code) !== -1) {
+          if (['ECONNRESET', 'ETIMEDOUT', 'FILE_IS_NOT_FULL'].indexOf(err.code) !== -1) {
             debug('Retry downloading', url, err);
             return new Promise(function(resolve) {
               setTimeout(resolve, 250);
@@ -322,7 +322,14 @@ class Updater extends EventEmitter {
             reject(err);
           })
           .on('finish', function () {
-            resolve();
+            if (request.downloadedBytes !== request.downloadLength) {
+              const err = new Error('File size is not full');
+              err.res = res;
+              err.code = 'FILE_IS_NOT_FULL';
+              reject(err);
+            } else {
+              resolve();
+            }
           });
 
         res.body.resume();
