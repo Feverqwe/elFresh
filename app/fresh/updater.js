@@ -8,7 +8,6 @@ const fsp = require('./fsp');
 const crypto = require('crypto');
 const unzip = require('unzip');
 const fsRemove = require('fs-extra/lib/remove');
-const fsMove = require('fs-extra/lib/move');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
 const appVersion = require('electron').app.getVersion();
@@ -85,15 +84,12 @@ class Updater extends EventEmitter {
       }
       self.state = STATE_UPDATE_AVAILABLE;
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
-      const extractPath = path.join(self._fresh._freshPath, 'tmp', 'bundle_' + updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
         return self._downloadUpdate(updateInfo).then(function (filename) {
-          return self._extractAndReadZip(filename, extractPath).then(function (files) {
-            return fsp.unlink(filename).then(function () {
-              return self._moveBundle(extractPath, bundlePath);
-            }).then(function () {
-              return self._writeVerify(files, bundlePath, updateInfo.sha256);
-            });
+          return self._extractAndReadZip(filename, bundlePath).then(function (files) {
+            return self._writeVerify(files, bundlePath, updateInfo.sha256);
+          }).then(function () {
+            return fsp.unlink(filename);
           });
         }).then(function () {
           self._fresh._config.bundleVersion = updateInfo.version;
@@ -410,19 +406,6 @@ class Updater extends EventEmitter {
     }).catch(function (err) {
       debug('_writeVerify error', err);
       throw err;
-    });
-  }
-
-  /**
-   * @param {string} extractPath
-   * @param {string} bundlePath
-   * @return {Promise}
-   */
-  _moveBundle(extractPath, bundlePath) {
-    return fsRemove.remove(bundlePath).then(function () {
-      return fsMkdirs.ensureDir(bundlePath);
-    }).then(function () {
-      return fsMove.move(extractPath, bundlePath);
     });
   }
 
