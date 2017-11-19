@@ -201,6 +201,7 @@ class Dialog extends React.Component {
     return (
       <div className="dialog">
         {content}
+        <div className="dialog-space"/>
         {buttons}
       </div>
     );

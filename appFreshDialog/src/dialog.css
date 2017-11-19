@@ -1,27 +1,38 @@
 html {
     user-select: none;
+    height: 100%;
 }
 
 body {
     background-color: #ececec;
+    height: 100%;
+    padding: 23px 21px;
+}
+
+#root {
+    height: 100%;
 }
 
 .dialog {
     display: flex;
     flex-direction: column;
-    margin: 23px 21px;
     margin-bottom: 0;
+    height: 100%;
 }
 
 .dialog-content {
     display: block;
     cursor: default;
+    overflow: auto;
+}
+
+.dialog-space {
+    flex-grow: 1;
 }
 
 .dialog-buttons-wrap {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
 }
 
 .dialog-button {
