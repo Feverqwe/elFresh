@@ -227,17 +227,15 @@ class DialogButtons extends React.Component {
       return null;
     }
 
-    buttons = this.props.buttons.map(function (item) {
-      return (
-        <div className="dialog-button">
-          <button type="button" onClick={item.onClick}>{item.title}</button>
-        </div>
-      );
-    });
-
     return (
       <div className="dialog-buttons-wrap">
-        {buttons}
+        {buttons.map(function (item) {
+          return (
+            <div className="dialog-button">
+              <button type="button" onClick={item.onClick}>{item.title}</button>
+            </div>
+          );
+        })}
       </div>
     );
   }
