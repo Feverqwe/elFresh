@@ -109,6 +109,9 @@ class Updater extends EventEmitter {
         self.state = STATE_UPDATE_DOWNLOADED;
         return updateInfo;
       });
+    }).catch(function (err) {
+      self.state = STATE_ERROR;
+      throw err;
     });
   }
 
