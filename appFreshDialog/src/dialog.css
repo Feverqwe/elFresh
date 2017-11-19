@@ -21,7 +21,7 @@ body {
 .dialog-buttons-wrap {
     display: flex;
     justify-content: flex-end;
-    margin: 20px 0 0 20px;
+    margin-top: 20px;
 }
 
 .dialog-button {
