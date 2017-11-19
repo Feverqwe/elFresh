@@ -23,13 +23,6 @@ const appVersion = require('electron').app.getVersion();
  * @property {string} version
  */
 
-const STATE_IDLE = 0;
-const STATE_CHECKING_FOR_UPDATE = 1;
-const STATE_UPDATE_AVAILABLE = 2;
-const STATE_UPDATE_DOWNLOADED = 3;
-const STATE_UPDATE_NOT_AVAILABLE = 4;
-const STATE_ERROR = 5;
-
 class Updater extends EventEmitter {
   constructor(/**Fresh*/fresh) {
     super();
@@ -37,14 +30,15 @@ class Updater extends EventEmitter {
     self._fresh = fresh;
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
     self._updatePromise = null;
-    self._state = STATE_IDLE;
 
-    self.STATE_IDLE = STATE_IDLE;
-    self.STATE_CHECKING_FOR_UPDATE = STATE_CHECKING_FOR_UPDATE;
-    self.STATE_UPDATE_AVAILABLE = STATE_UPDATE_AVAILABLE;
-    self.STATE_UPDATE_DOWNLOADED = STATE_UPDATE_DOWNLOADED;
-    self.STATE_UPDATE_NOT_AVAILABLE = STATE_UPDATE_NOT_AVAILABLE;
-    self.STATE_ERROR = STATE_ERROR;
+    self.STATE_IDLE = 0;
+    self.STATE_CHECKING_FOR_UPDATE = 1;
+    self.STATE_UPDATE_AVAILABLE = 2;
+    self.STATE_UPDATE_DOWNLOADED = 3;
+    self.STATE_UPDATE_NOT_AVAILABLE = 4;
+    self.STATE_ERROR = 5;
+
+    self._state = self.STATE_IDLE;
   }
 
   /**
@@ -84,13 +78,13 @@ class Updater extends EventEmitter {
    */
   _update() {
     const self = this;
-    self.state = STATE_CHECKING_FOR_UPDATE;
+    self.state = self.STATE_CHECKING_FOR_UPDATE;
     return self._checkUpdate(self._fresh._pkgConfig, self._fresh.bundleVersion).then(function (updateInfo) {
       if (!updateInfo) {
-        self.state = STATE_UPDATE_NOT_AVAILABLE;
+        self.state = self.STATE_UPDATE_NOT_AVAILABLE;
         return null;
       }
-      self.state = STATE_UPDATE_AVAILABLE;
+      self.state = self.STATE_UPDATE_AVAILABLE;
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
         return self._downloadUpdate(updateInfo).then(function (filename) {
@@ -106,11 +100,11 @@ class Updater extends EventEmitter {
           return self._clearBundles([updateInfo.version, self._fresh.bundleVersion]);
         });
       }).then(function () {
-        self.state = STATE_UPDATE_DOWNLOADED;
+        self.state = self.STATE_UPDATE_DOWNLOADED;
         return updateInfo;
       });
     }).catch(function (err) {
-      self.state = STATE_ERROR;
+      self.state = self.STATE_ERROR;
       throw err;
     });
   }
