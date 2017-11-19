@@ -109,10 +109,6 @@ class Updater extends EventEmitter {
         self.state = STATE_UPDATE_DOWNLOADED;
         return updateInfo;
       });
-    }).catch(function (err) {
-      debug('update error', err);
-      self.state = STATE_ERROR;
-      return null;
     });
   }
 
@@ -141,8 +137,6 @@ class Updater extends EventEmitter {
       if (!bundleVersion || compareVersions(updateInfo.version, bundleVersion) > 0) {
         return updateInfo;
       }
-    }).catch(function (err) {
-      debug('checkUpdate error %o', err);
     });
   }
 
