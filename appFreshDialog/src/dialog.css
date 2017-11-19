@@ -10,6 +10,7 @@ body {
     display: flex;
     flex-direction: column;
     margin: 23px 21px;
+    margin-bottom: 0;
 }
 
 .dialog-content {
