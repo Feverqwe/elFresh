@@ -29,7 +29,7 @@ class Dialog {
     win.loadURL(url.format({
       protocol: 'file',
       slashes: true,
-      pathname: path.join(__dirname, 'dialog.html')
+      pathname: path.join(__dirname, '/dialog/index.html')
     }));
 
     win.on('closed', function () {
@@ -39,7 +39,7 @@ class Dialog {
   }
   onCreate() {
     const self = this;
-    ipcMain.on('fresh-dialog', self.onMessage);
+    ipcMain.on('fresh-dialog', self.handleMessage);
     self.fresh.updater.on('stateChange', self.handleStateChange);
     self.fresh.updater.on('downloadProgress', self.handleDownloadProgress);
   }

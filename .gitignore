@@ -1,8 +1,7 @@
 node_modules
 .idea
-/dist
-/appBg/dist/*
-/appUi/dist/*
+dist
 /app/bundle/*
 /app/fresh.config.json
 package-lock.json
+/app/freshUi/dialog
