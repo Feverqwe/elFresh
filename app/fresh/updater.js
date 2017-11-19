@@ -339,7 +339,7 @@ class Updater extends EventEmitter {
   /**
    * @param {string} filename
    * @param {string} extractPath
-   * @return {Promise.<string[]>}
+   * @return {Promise.<{path:string,size:number,sha256:string}[]>}
    */
   _extractAndReadZip(filename, extractPath) {
     const self = this;
@@ -358,7 +358,7 @@ class Updater extends EventEmitter {
 
   /**
    * @param {Object} stream
-   * @return {Promise.<string[]>}
+   * @return {Promise.<{path:string,size:number,sha256:string}[]>}
    */
   _getZipFiles(stream) {
     const self = this;
