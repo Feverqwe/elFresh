@@ -155,8 +155,47 @@ class Updater extends EventEmitter {
       if (self._fresh._config.bundleVersion !== updateInfo.version) {
         throw new Error('bundleVersion is not equal');
       }
-      self._fresh._verifyBundle(bundlePath, updateInfo.sha256);
+      return self._verifyBundleAsync(bundlePath, updateInfo.sha256);
     });
+  }
+
+  /**
+   * @param {string} bundlePath
+   * @param {string} packageHash
+   * @return {Promise}
+   */
+  async _verifyBundleAsync(bundlePath, packageHash) {
+    const self = this;
+    const verifyFilename = path.join(bundlePath, '_verify.json');
+    /**@type {FreshVerify}*/
+    const verify = JSON.parse(await fsfs.readFile(verifyFilename));
+    if (verify.packageHash !== packageHash) {
+      throw new Error('Package hash is incorrect');
+    }
+    let saveVerify = false;
+    let promise = Promise.resolve();
+    verify._files.forEach(function (file) {
+      promise = promise.then(async function () {
+        const filename = path.join(bundlePath, file.path);
+        const stat = await fsfs.stat(filename);
+        const etag = self._fresh._getETag(stat);
+        if (file.etag !== etag) {
+          if (file.size !== stat.size) {
+            throw new Error('File size is incorrect');
+          }
+          const sha256 = await self._getHash(filename, 'sha256');
+          if (file.sha256 !== sha256) {
+            throw new Error('File hash is incorrect');
+          }
+          file.etag = etag;
+          saveVerify = true;
+        }
+      });
+    });
+    await promise;
+    if (saveVerify) {
+      await fsfs.writeFile(verifyFilename, JSON.stringify(verify));
+    }
   }
 
   /**
