@@ -76,6 +76,9 @@ class Updater extends EventEmitter {
       return self._updatePromise = self._update().then(function (result) {
         self._updatePromise = null;
         return result;
+      }, function (err) {
+        self._updatePromise = null;
+        throw err;
       });
     }
   }
