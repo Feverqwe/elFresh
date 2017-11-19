@@ -23,6 +23,13 @@ const appVersion = require('electron').app.getVersion();
  * @property {string} version
  */
 
+/**
+ * @typedef {{}} FreshFipFile
+ * @property {string} path
+ * @property {number} size
+ * @property {string} sha256
+ */
+
 class Updater extends EventEmitter {
   constructor(/**Fresh*/fresh) {
     super();
@@ -334,7 +341,7 @@ class Updater extends EventEmitter {
   /**
    * @param {string} filename
    * @param {string} extractPath
-   * @return {Promise.<{path:string,size:number,sha256:string}[]>}
+   * @return {Promise.<FreshFipFile[]>}
    */
   _extractAndReadZip(filename, extractPath) {
     const self = this;
@@ -352,8 +359,8 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @param {Object} stream
-   * @return {Promise.<{path:string,size:number,sha256:string}[]>}
+   * @param {Readable} stream
+   * @return {Promise.<FreshFipFile[]>}
    */
   _getZipFiles(stream) {
     const self = this;
@@ -384,7 +391,7 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @param {Object} stream
+   * @param {Readable} stream
    * @param {string} extractPath
    * @return {Promise}
    */
@@ -403,7 +410,7 @@ class Updater extends EventEmitter {
   }
 
   /**
-   * @param {{path:string,size:number,sha256:string}[]} files
+   * @param {FreshFipFile[]} files
    * @param {string} extractPath
    * @param {string} packageHash
    * @return {Promise}
