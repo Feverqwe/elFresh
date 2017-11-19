@@ -32,6 +32,7 @@ class Dialog {
       maximizable: false,
       resizable: false,
       fullscreenable: false,
+      autoHideMenuBar: true,
       backgroundColor: '#ececec'
     });
 
