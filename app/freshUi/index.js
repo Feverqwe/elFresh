@@ -22,7 +22,18 @@ class Dialog {
   }
   init() {
     const self = this;
-    const win = new BrowserWindow();
+    const win = new BrowserWindow({
+      width: 530,
+      height: 130,
+      useContentSize: true,
+      center: true,
+      // closable: false,
+      minimizable: false,
+      maximizable: false,
+      resizable: false,
+      fullscreenable: false,
+      backgroundColor: '#ececec'
+    });
 
     self.win = win;
 
