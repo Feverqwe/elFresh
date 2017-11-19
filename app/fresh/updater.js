@@ -299,6 +299,7 @@ class Updater extends EventEmitter {
     return request.then(function (res) {
       const successStatus = stat ? 206 : 200;
       if (res.status !== successStatus) {
+        request.abort();
         const err = new Error('Bad status');
         err.res = res;
         throw err;
