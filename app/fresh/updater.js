@@ -316,7 +316,11 @@ class Updater extends EventEmitter {
           options.flags = 'a';
         }
 
-        res.body.pipe(fsfs.createWriteStream(filename, options))
+        res.body
+          .on('error', function (err) {
+            reject(err);
+          })
+          .pipe(fsfs.createWriteStream(filename, options))
           .on('error', function (err) {
             reject(err);
           })
