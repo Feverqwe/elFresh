@@ -1,0 +1,36 @@
+html {
+    user-select: none;
+}
+
+body {
+    background-color: #ececec;
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    margin: 23px 21px;
+}
+
+.dialog-content {
+    display: block;
+    cursor: default;
+}
+
+.dialog-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0 0 20px;
+}
+
+.dialog-button {
+    margin-left: 14px;
+}
+
+.dialog-button button {
+    min-width: 100px;
+}
+
+progress {
+    width: 100%;
+}

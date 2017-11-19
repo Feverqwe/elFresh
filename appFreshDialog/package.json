@@ -5,6 +5,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "pretty-bytes": "^4.0.2",
     "react": "^16.1.1",
     "react-dom": "^16.1.1"
   },

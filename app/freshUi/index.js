@@ -1,7 +1,7 @@
 const debug = require('debug')('freshUi');
 const url = require('url');
 const path = require('path');
-const {BrowserWindow, ipcMain} = require('electron');
+const {BrowserWindow, ipcMain, app} = require('electron');
 
 class Dialog {
   constructor(fresh) {
@@ -23,17 +23,18 @@ class Dialog {
   init() {
     const self = this;
     const win = new BrowserWindow({
-      width: 530,
-      height: 130,
+      width: 400,
+      height: 112,
       useContentSize: true,
       center: true,
       // closable: false,
       minimizable: false,
       maximizable: false,
-      resizable: false,
+      // resizable: false,
       fullscreenable: false,
       autoHideMenuBar: true,
-      backgroundColor: '#ececec'
+      backgroundColor: '#ececec',
+      title: 'Update'
     });
 
     self.win = win;
@@ -86,6 +87,10 @@ class Dialog {
     }
 
     switch (msg.action) {
+      case 'getStateSync': {
+        event.returnValue = self.fresh.updater.state;
+        return;
+      }
       case 'getState': {
         return self.sendMessage({
           type: 'state',
@@ -96,6 +101,10 @@ class Dialog {
         return self.fresh.updater.update().catch(function (err) {
           debug('Update error', err);
         });
+      }
+      case 'relaunch': {
+        app.relaunch({args: process.argv.slice(1).concat(['--relaunch'])});
+        app.exit(0);
       }
     }
   }
