@@ -51,11 +51,6 @@ class DialogCtr extends React.Component {
       action: 'getStateSync'
     });
   }
-  getState() {
-    this.send({
-      action: 'getState'
-    });
-  }
   update() {
     this.send({
       action: 'update'

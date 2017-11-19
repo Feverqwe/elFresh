@@ -91,12 +91,6 @@ class Dialog {
         event.returnValue = self.fresh.updater.state;
         return;
       }
-      case 'getState': {
-        return self.sendMessage({
-          type: 'state',
-          state: self.fresh.updater.state
-        });
-      }
       case 'update': {
         return self.fresh.updater.update().catch(function (err) {
           debug('Update error', err);
