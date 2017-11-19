@@ -35,7 +35,6 @@ class Updater extends EventEmitter {
     super();
     const self = this;
     self._fresh = fresh;
-    self._tmpPath = path.join(fresh._freshPath, 'tmp');
     self._updatePromise = null;
     self._state = STATE_IDLE;
 
@@ -93,12 +92,8 @@ class Updater extends EventEmitter {
       self.state = STATE_UPDATE_AVAILABLE;
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
-        return self._downloadUpdate(updateInfo).then(function (filename) {
-          return self._extractAndReadZip(filename, bundlePath).then(function (files) {
-            return self._writeVerify(files, bundlePath, updateInfo.sha256);
-          }).then(function () {
-            return fsfs.unlink(filename);
-          });
+        return self._saveBundle(updateInfo, bundlePath).then(function (files) {
+          return self._writeVerify(files, bundlePath, updateInfo.sha256);
         }).then(function () {
           self._fresh._config.bundleVersion = updateInfo.version;
           return self._fresh._saveConfig();
@@ -158,48 +153,69 @@ class Updater extends EventEmitter {
         throw new Error('bundleVersion is not equal');
       }
       self._fresh._verifyBundle(bundlePath, updateInfo.sha256);
+    }).catch(function (err) {
+      return fsRemove.remove(bundlePath).then(function () {
+        throw err;
+      });
     });
   }
 
   /**
    * @param {FreshBundleUpdateInfo} updateInfo
-   * @return {Promise.<string>}
+   * @param {string} bundlePath
+   * @return {Promise}
    */
-  _downloadUpdate(updateInfo) {
+  _saveBundle(updateInfo, bundlePath) {
     const self = this;
-    const url = updateInfo.url;
-    const sha256 = updateInfo.sha256;
-    const name = `bundle_${updateInfo.version}.zip`;
-    const filename = path.join(self._tmpPath, name);
-    const tmpFilename = filename + '.tmp';
+    const {url, sha256} = updateInfo;
 
-    return fsMkdirs.ensureDir(self._tmpPath).then(function () {
-      return fsfs.access(filename).catch(function () {
-        return self._tryContinue(url, tmpFilename).then(function () {
-          return fsfs.rename(tmpFilename, filename);
-        });
+    const request = popsicle.get({
+      url: url,
+      transport: popsicle.createTransport({type: 'stream'})
+    });
+    request.on('progress', function () {
+      self.emit('downloadProgress', {
+        downloadedBytes: request.downloadedBytes,
+        downloadLength: request.downloadLength,
+        downloaded: request.downloaded,
+        completed: request.completed
       });
-    }).then(function () {
-      return self._compareHash(filename, 'sha256', sha256).catch(function (err) {
-        return fsfs.unlink(filename).then(function () {
-          throw err;
-        });
+    });
+    return request.then(function (res) {
+      if (res.status !== 200) {
+        const err = new Error('Bad status');
+        err.res = res;
+        throw err;
+      }
+
+      let stream = res.body;
+
+      stream.pause();
+
+      const promise = Promise.all([
+        self._compareHash(stream, 'sha256', sha256),
+        self._getZipFiles(stream),
+        self._extractZip(stream, bundlePath)
+      ]).then(function (results) {
+        return results[1];
       });
-    }).then(function () {
-      return filename;
+
+      stream.resume();
+
+      return promise;
     });
   }
 
   /**
-   * @param {string} filename
+   * @param {Readable} stream
    * @param {string} alg
    * @param {string} hash
    * @return {Promise}
    */
-  _compareHash(filename, alg, hash) {
+  _compareHash(stream, alg, hash) {
     const self = this;
-    return self._getHash(filename, alg).then(function (fileHash) {
-      if (fileHash !== hash) {
+    return self._getStreamHash(stream, alg).then(function (result) {
+      if (result !== hash) {
         throw new Error('Hash is incorrect');
       }
     });
@@ -230,130 +246,6 @@ class Updater extends EventEmitter {
         .on('finish', function () {
           resolve(this.read());
         });
-    });
-  }
-
-  /**
-   * @param {string} url
-   * @param {string} filename
-   * @return {Promise}
-   */
-  _tryContinue(url, filename) {
-    const self = this;
-    let retryCount = 10;
-    const tryContinue = function () {
-      return fsfs.stat(filename).then(function (stat) {
-        return self._downloadFile(url, filename, stat).catch(function (err) {
-          if (err.res && err.res.status === 416) {
-            debug('Unable to resume download!', err);
-            return self._downloadFile(url, filename);
-          }
-          throw err;
-        });
-      }, function () {
-        return self._downloadFile(url, filename);
-      }).catch(function (err) {
-        if (retryCount-- > 0) {
-          if (['ECONNRESET', 'ETIMEDOUT', 'FILE_IS_NOT_FULL'].indexOf(err.code) !== -1) {
-            debug('Retry downloading', url, err);
-            return new Promise(function(resolve) {
-              setTimeout(resolve, 250);
-            }).then(tryContinue);
-          }
-        }
-
-        throw err;
-      });
-    };
-    return tryContinue();
-  }
-
-  /**
-   * @param {string} url
-   * @param {string} filename
-   * @param {Object} [stat]
-   * @return {Promise}
-   */
-  _downloadFile(url, filename, stat) {
-    const self = this;
-
-    let headers = {};
-    if (stat) {
-      headers['Range'] = 'bytes=' + stat.size + '-';
-    }
-
-    const request = popsicle.request({
-      method: 'GET',
-      url: url,
-      headers: headers,
-      transport: popsicle.createTransport({ type: 'stream' })
-    });
-    request.on('progress', function () {
-      self.emit('downloadProgress', {
-        downloadedBytes: request.downloadedBytes,
-        downloadLength: request.downloadLength,
-        downloaded: request.downloaded,
-        completed: request.completed
-      });
-    });
-    return request.then(function (res) {
-      if (
-        (stat && res.status !== 206) ||
-        (!stat && res.status !== 200)
-      ) {
-        const err = new Error('Bad status');
-        err.res = res;
-        throw err;
-      }
-
-      res.body.pause();
-
-      return new Promise(function (resolve, reject) {
-        const options = {};
-        if (res.status === 200) {
-          options.flags = 'w';
-        } else
-        if (res.status === 206) {
-          options.flags = 'a';
-        }
-
-        res.body.pipe(fsfs.createWriteStream(filename, options))
-          .on('error', function (err) {
-            reject(err);
-          })
-          .on('finish', function () {
-            if (request.downloadedBytes !== request.downloadLength) {
-              const err = new Error('File size is not full');
-              err.res = res;
-              err.code = 'FILE_IS_NOT_FULL';
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-
-        res.body.resume();
-      });
-    });
-  }
-
-  /**
-   * @param {string} filename
-   * @param {string} extractPath
-   * @return {Promise.<string[]>}
-   */
-  _extractAndReadZip(filename, extractPath) {
-    const self = this;
-    return fsRemove.remove(extractPath).then(function () {
-      return fsMkdirs.ensureDir(extractPath);
-    }).then(function () {
-      const stream = fsfs.createReadStream(filename);
-      return Promise.all([
-        self._getZipFiles(stream),
-        self._extractZip(stream, extractPath)
-      ]).then(function (results) {
-        return results[0];
-      });
     });
   }
 
