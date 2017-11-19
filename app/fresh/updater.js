@@ -275,7 +275,7 @@ class Updater extends EventEmitter {
   _downloadFile(url, filename, stat) {
     const self = this;
 
-    let headers = {};
+    const headers = {};
     if (stat) {
       headers['Range'] = 'bytes=' + stat.size + '-';
     }
