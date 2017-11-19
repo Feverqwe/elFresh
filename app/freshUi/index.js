@@ -82,7 +82,8 @@ class Dialog {
   }
   handleMessage(event, msg) {
     const self = this;
-    if (event.sender.webContents !== self.win.webContents) {
+    const winWebContents = self.win && self.win.webContents;
+    if (event.sender.webContents !== winWebContents) {
       return;
     }
 
