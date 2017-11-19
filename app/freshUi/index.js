@@ -16,9 +16,9 @@ class Dialog {
     this.init();
     this.onCreate();
 
-    this.win.webContents.openDevTools({
+    /*this.win.webContents.openDevTools({
       mode: 'detach'
-    });
+    });*/
   }
   init() {
     const self = this;
