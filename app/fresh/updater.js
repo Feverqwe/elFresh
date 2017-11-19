@@ -297,10 +297,8 @@ class Updater extends EventEmitter {
       });
     });
     return request.then(function (res) {
-      if (
-        (stat && res.status !== 206) ||
-        (!stat && res.status !== 200)
-      ) {
+      const successStatus = stat ? 206 : 200;
+      if (res.status !== successStatus) {
         const err = new Error('Bad status');
         err.res = res;
         throw err;
