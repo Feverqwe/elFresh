@@ -164,38 +164,43 @@ class Updater extends EventEmitter {
    * @param {string} packageHash
    * @return {Promise}
    */
-  async _verifyBundleAsync(bundlePath, packageHash) {
+  _verifyBundleAsync(bundlePath, packageHash) {
     const self = this;
     const verifyFilename = path.join(bundlePath, '_verify.json');
-    /**@type {FreshVerify}*/
-    const verify = JSON.parse(await fsfs.readFile(verifyFilename));
-    if (verify.packageHash !== packageHash) {
-      throw new Error('Package hash is incorrect');
-    }
-    let saveVerify = false;
-    let promise = Promise.resolve();
-    verify._files.forEach(function (file) {
-      promise = promise.then(async function () {
-        const filename = path.join(bundlePath, file.path);
-        const stat = await fsfs.stat(filename);
-        const etag = self._fresh._getETag(stat);
-        if (file.etag !== etag) {
-          if (file.size !== stat.size) {
-            throw new Error('File size is incorrect');
-          }
-          const sha256 = await self._getHash(filename, 'sha256');
-          if (file.sha256 !== sha256) {
-            throw new Error('File hash is incorrect');
-          }
-          file.etag = etag;
-          saveVerify = true;
+    return fsfs.readFile(verifyFilename).then(function (data) {
+      return JSON.parse(data);
+    }).then(function (/**FreshVerify*/verify) {
+      if (verify.packageHash !== packageHash) {
+        throw new Error('Package hash is incorrect');
+      }
+      let saveVerify = false;
+      let promise = Promise.resolve();
+      verify._files.forEach(function (file) {
+        promise = promise.then(function () {
+          const filename = path.join(bundlePath, file.path);
+          return fsfs.stat(filename).then(function (stat) {
+            const etag = self._fresh._getETag(stat);
+            if (file.etag !== etag) {
+              if (file.size !== stat.size) {
+                throw new Error('File size is incorrect');
+              }
+              return self._getHash(filename, 'sha256').then(function (sha256) {
+                if (file.sha256 !== sha256) {
+                  throw new Error('File hash is incorrect');
+                }
+                file.etag = etag;
+                saveVerify = true;
+              });
+            }
+          });
+        });
+      });
+      return promise.then(function () {
+        if (saveVerify) {
+          return fsfs.writeFile(verifyFilename, JSON.stringify(verify));
         }
       });
     });
-    await promise;
-    if (saveVerify) {
-      await fsfs.writeFile(verifyFilename, JSON.stringify(verify));
-    }
   }
 
   /**
