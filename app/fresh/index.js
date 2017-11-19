@@ -216,16 +216,12 @@ class Fresh {
 
   /**
    * @param {string} bundlePath
-   * @param {string} [packageHash]
    */
-  _verifyBundle(bundlePath, packageHash) {
+  _verifyBundle(bundlePath) {
     const self = this;
     const verifyFilename = path.join(bundlePath, '_verify.json');
     /**@type {FreshVerify}*/
     const verify = JSON.parse(fs.readFileSync(verifyFilename));
-    if (packageHash && verify.packageHash !== packageHash) {
-      throw new Error('Package hash is incorrect');
-    }
     let saveVerify = false;
     verify._files.forEach(function (file) {
       const filename = path.join(bundlePath, file.path);
