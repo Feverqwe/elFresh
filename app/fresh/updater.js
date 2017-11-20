@@ -54,6 +54,12 @@ class Updater extends EventEmitter {
     };
 
     self._state = self.STATE_IDLE;
+
+    self.on('error', function (err) {
+      if (self.listenerCount('error') === 1) {
+        debug('Update error %o', err);
+      }
+    });
   }
 
   checkForUpdates() {
