@@ -70,7 +70,7 @@ class Dialog {
     const self = this;
     self.sendMessage({
       type: 'state',
-      state: state
+      state: state.state
     });
   }
   handleDownloadingProgress(progress) {

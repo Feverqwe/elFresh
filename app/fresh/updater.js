@@ -77,9 +77,17 @@ class Updater extends EventEmitter {
   _setState(state, ...args) {
     const self = this;
     self._state = state;
-    self.emit('state', self._state);
 
-    args.unshift(self.stateEventName[state]);
+    const type = self.stateEventName[state];
+
+    const event = {
+      type: type,
+      state: state
+    };
+
+    self.emit('state', event);
+
+    args.unshift(type, event);
     self.emit.apply(self, args);
   }
 
