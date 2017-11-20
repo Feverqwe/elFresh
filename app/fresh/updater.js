@@ -410,7 +410,7 @@ class Updater extends EventEmitter {
             reject(err);
           })
           .on('finish', function () {
-            if (request.downloadedBytes !== request.downloadLength) {
+            if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
               const err = new Error('File size is not full');
               err.res = res;
               err.code = 'FILE_IS_NOT_FULL';
