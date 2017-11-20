@@ -45,16 +45,28 @@ class Updater extends EventEmitter {
     self.STATE_UPDATE_NOT_AVAILABLE = 4;
     self.STATE_ERROR = 5;
 
+    self.stateEventName = {
+      1: 'checking-for-update',
+      2: 'update-available',
+      3: 'update-downloaded',
+      4: 'update-not-available',
+      5: 'error'
+    };
+
     self._state = self.STATE_IDLE;
   }
 
   /**
    * @param {number} state
+   * @param {*} args
    */
-  set state(state) {
+  setState(state, ...args) {
     const self = this;
     self._state = state;
     self.emit('stateChange', self._state);
+
+    args.unshift(self.stateEventName[state]);
+    self.emit.apply(self, args);
   }
 
   /**
@@ -88,13 +100,13 @@ class Updater extends EventEmitter {
    */
   _update() {
     const self = this;
-    self.state = self.STATE_CHECKING_FOR_UPDATE;
+    self.setState(self.STATE_CHECKING_FOR_UPDATE);
     return self._checkUpdate(self._fresh._pkgConfig, self._fresh.bundleVersion).then(function (updateInfo) {
       if (!updateInfo) {
-        self.state = self.STATE_UPDATE_NOT_AVAILABLE;
+        self.setState(self.STATE_UPDATE_NOT_AVAILABLE);
         return null;
       }
-      self.state = self.STATE_UPDATE_AVAILABLE;
+      self.setState(self.STATE_UPDATE_AVAILABLE, updateInfo);
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
         return self._downloadUpdate(updateInfo).then(function (filename) {
@@ -110,11 +122,11 @@ class Updater extends EventEmitter {
           return self._clearBundles([updateInfo.version, self._fresh.bundleVersion]);
         });
       }).then(function () {
-        self.state = self.STATE_UPDATE_DOWNLOADED;
+        self.setState(self.STATE_UPDATE_DOWNLOADED, updateInfo);
         return updateInfo;
       });
     }).catch(function (err) {
-      self.state = self.STATE_ERROR;
+      self.setState(self.STATE_ERROR, err);
       throw err;
     });
   }
