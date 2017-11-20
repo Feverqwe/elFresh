@@ -4,7 +4,7 @@ const path = require('path');
 const {BrowserWindow, ipcMain, app} = require('electron');
 
 class Dialog {
-  constructor(fresh) {
+  constructor(/**Fresh*/fresh) {
     this.fresh = fresh;
 
     this.win = null;
@@ -90,16 +90,15 @@ class Dialog {
     switch (msg.action) {
       case 'getStateSync': {
         event.returnValue = self.fresh.updater.state;
-        return;
+        break;
       }
       case 'update': {
-        return self.fresh.updater.update().catch(function (err) {
-          debug('Update error', err);
-        });
+        self.fresh.updater.checkForUpdates();
+        break;
       }
       case 'relaunch': {
-        app.relaunch({args: process.argv.slice(1).concat(['--relaunch'])});
-        app.exit(0);
+        self.fresh.updater.quitAndInstall();
+        break;
       }
     }
   }

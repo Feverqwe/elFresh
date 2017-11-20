@@ -56,11 +56,25 @@ class Updater extends EventEmitter {
     self._state = self.STATE_IDLE;
   }
 
+  checkForUpdates() {
+    const self = this;
+    self.update().catch(function (err) {
+      debug('checkForUpdates error %o', err);
+    });
+  }
+
+  quitAndInstall() {
+    const self = this;
+    const {app} = require('electron');
+    app.relaunch({args: process.argv.slice(1).concat(['--relaunch_after_update'])});
+    app.exit(0);
+  }
+
   /**
    * @param {number} state
    * @param {*} args
    */
-  setState(state, ...args) {
+  _setState(state, ...args) {
     const self = this;
     self._state = state;
     self.emit('state', self._state);
@@ -100,13 +114,13 @@ class Updater extends EventEmitter {
    */
   _update() {
     const self = this;
-    self.setState(self.STATE_CHECKING_FOR_UPDATE);
+    self._setState(self.STATE_CHECKING_FOR_UPDATE);
     return self._checkUpdate(self._fresh._pkgConfig, self._fresh.bundleVersion).then(function (updateInfo) {
       if (!updateInfo) {
-        self.setState(self.STATE_UPDATE_NOT_AVAILABLE);
+        self._setState(self.STATE_UPDATE_NOT_AVAILABLE);
         return null;
       }
-      self.setState(self.STATE_UPDATE_AVAILABLE, updateInfo);
+      self._setState(self.STATE_UPDATE_AVAILABLE, updateInfo);
       const bundlePath = path.join(self._fresh._bundlesPath, updateInfo.version);
       return self._checkBundle(updateInfo, bundlePath).catch(function (err) {
         return self._downloadUpdate(updateInfo).then(function (filename) {
@@ -122,11 +136,11 @@ class Updater extends EventEmitter {
           return self._clearBundles([updateInfo.version, self._fresh.bundleVersion]);
         });
       }).then(function () {
-        self.setState(self.STATE_UPDATE_DOWNLOADED, updateInfo);
+        self._setState(self.STATE_UPDATE_DOWNLOADED, updateInfo);
         return updateInfo;
       });
     }).catch(function (err) {
-      self.setState(self.STATE_ERROR, err);
+      self._setState(self.STATE_ERROR, err);
       throw err;
     });
   }
