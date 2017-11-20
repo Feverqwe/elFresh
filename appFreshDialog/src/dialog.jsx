@@ -69,7 +69,7 @@ class DialogCtr extends React.Component {
         });
         break;
       }
-      case 'downloadProgress': {
+      case 'downloading-progress': {
         const {downloadedBytes, downloadLength} = msg.progress;
         const percents = parseInt(100 / downloadLength * downloadedBytes);
         this.setState({

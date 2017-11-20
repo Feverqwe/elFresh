@@ -10,8 +10,8 @@ class Dialog {
     this.win = null;
 
     this.handleMessage = this.handleMessage.bind(this);
-    this.handleStateChange = this.handleStateChange.bind(this);
-    this.handleDownloadProgress = this.handleDownloadProgress.bind(this);
+    this.handleState = this.handleState.bind(this);
+    this.handleDownloadingProgress = this.handleDownloadingProgress.bind(this);
 
     this.init();
     this.onCreate();
@@ -53,30 +53,30 @@ class Dialog {
   onCreate() {
     const self = this;
     ipcMain.on('fresh-dialog', self.handleMessage);
-    self.fresh.updater.on('stateChange', self.handleStateChange);
-    self.fresh.updater.on('downloadProgress', self.handleDownloadProgress);
+    self.fresh.updater.on('state', self.handleState);
+    self.fresh.updater.on('downloading-progress', self.handleDownloadingProgress);
   }
   onDestroy() {
     const self = this;
     ipcMain.removeListener('fresh-dialog', self.handleMessage);
-    self.fresh.updater.removeListener('stateChange', self.handleStateChange);
-    self.fresh.updater.removeListener('downloadProgress', self.handleDownloadProgress);
+    self.fresh.updater.removeListener('state', self.handleState);
+    self.fresh.updater.removeListener('downloading-progress', self.handleDownloadingProgress);
   }
   sendMessage(msg) {
     const self = this;
     self.win && self.win.webContents.send('fresh-dialog', msg);
   }
-  handleStateChange(state) {
+  handleState(state) {
     const self = this;
     self.sendMessage({
       type: 'state',
       state: state
     });
   }
-  handleDownloadProgress(progress) {
+  handleDownloadingProgress(progress) {
     const self = this;
     self.sendMessage({
-      type: 'downloadProgress',
+      type: 'downloading-progress',
       progress: progress
     });
   }

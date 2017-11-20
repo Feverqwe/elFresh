@@ -63,7 +63,7 @@ class Updater extends EventEmitter {
   setState(state, ...args) {
     const self = this;
     self._state = state;
-    self.emit('stateChange', self._state);
+    self.emit('state', self._state);
 
     args.unshift(self.stateEventName[state]);
     self.emit.apply(self, args);
@@ -346,7 +346,7 @@ class Updater extends EventEmitter {
       transport: popsicle.createTransport({ type: 'stream' })
     });
     request.on('progress', function () {
-      self.emit('downloadProgress', {
+      self.emit('downloading-progress', {
         downloadedBytes: request.downloadedBytes,
         downloadLength: request.downloadLength,
         downloaded: request.downloaded,
