@@ -308,6 +308,9 @@ class Updater extends EventEmitter {
   _getStreamHash(stream, alg) {
     return new Promise(function (resolve, reject) {
       stream
+        .on('error', function (err) {
+          reject(err);
+        })
         .pipe(crypto.createHash(alg).setEncoding('hex'))
         .on('error', function (err) {
           reject(err);
@@ -454,7 +457,13 @@ class Updater extends EventEmitter {
     return new Promise(function (resolve, reject) {
       const files = [];
       return stream
+        .on('error', function (err) {
+          reject(err);
+        })
         .pipe(unzip.Parse())
+        .on('error', function (err) {
+          reject(err);
+        })
         .on('entry', function (entry) {
           if (entry.type === 'File') {
             const promise = self._getStreamHash(entry, 'sha256')
@@ -469,9 +478,11 @@ class Updater extends EventEmitter {
           } else {
             entry.autodrain();
           }
-        }).on('error', function (err) {
+        })
+        .on('error', function (err) {
           reject(err);
-        }).on('close', function () {
+        })
+        .on('close', function () {
           resolve(Promise.all(files));
         });
     });
@@ -486,11 +497,16 @@ class Updater extends EventEmitter {
     const self = this;
     return new Promise(function (resolve, reject) {
       return stream
+        .on('error', function (err) {
+          reject(err);
+        })
         .pipe(unzip.Extract({
           path: extractPath
-        })).on('error', function (err) {
+        }))
+        .on('error', function (err) {
           reject(err);
-        }).on('close', function () {
+        })
+        .on('close', function () {
           resolve();
         });
     });
