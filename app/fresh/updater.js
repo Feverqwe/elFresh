@@ -9,7 +9,6 @@ const fsfs = require('fs-extra/lib/fs');
 const fsRemove = require('fs-extra/lib/remove');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
-const appVersion = require('electron').app.getVersion();
 
 /**
  * @typedef {{}} FreshBundleUpdate
@@ -37,6 +36,7 @@ class Updater extends EventEmitter {
     self._fresh = fresh;
     self._tmpPath = path.join(fresh._freshPath, 'tmp');
     self._updatePromise = null;
+    self._appVersion = require('electron').app.getVersion();
 
     self.STATE_IDLE = 0;
     self.STATE_CHECKING_FOR_UPDATE = 1;
@@ -168,7 +168,7 @@ class Updater extends EventEmitter {
     const self = this;
     return popsicle.get(pkgConfig.updateUrl + '?' + qs.stringify({
       id: self._fresh.id,
-      appVersion: appVersion,
+      appVersion: self._appVersion,
       bundleVersion: bundleVersion,
       freshVersion: self._fresh.version
     })).then(function (res) {
