@@ -222,7 +222,7 @@ class Fresh {
     const verifyFilename = path.join(bundlePath, '_verify.json');
     /**@type {FreshVerify}*/
     const verify = JSON.parse(fs.readFileSync(verifyFilename));
-    let saveVerify = false;
+    let updateVerify = false;
     verify._files.forEach(function (file) {
       const filename = path.join(bundlePath, file.path);
       const stat = fs.statSync(filename);
@@ -238,11 +238,15 @@ class Fresh {
           }
         }
         file.etag = etag;
-        saveVerify = true;
+        updateVerify = true;
       }
     });
-    if (saveVerify) {
-      fs.writeFileSync(verifyFilename, JSON.stringify(verify));
+    if (updateVerify) {
+      try {
+        fs.writeFileSync(verifyFilename, JSON.stringify(verify));
+      } catch (err) {
+        debug('Can\'t update verify file', verifyFilename);
+      }
     }
   }
 
