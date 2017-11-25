@@ -245,7 +245,7 @@ class Fresh {
       try {
         fs.writeFileSync(verifyFilename, JSON.stringify(verify));
       } catch (err) {
-        debug('Can\'t update verify file', verifyFilename);
+        debug('Can\'t update verify file', verifyFilename, err);
       }
     }
   }

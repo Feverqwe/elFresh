@@ -216,7 +216,7 @@ class Updater extends EventEmitter {
       if (verify.packageHash !== packageHash) {
         throw new Error('Package hash is incorrect');
       }
-      let saveVerify = false;
+      let updateVerify = false;
       let promise = Promise.resolve();
       verify._files.forEach(function (file) {
         promise = promise.then(function () {
@@ -232,15 +232,17 @@ class Updater extends EventEmitter {
                   throw new Error('File hash is incorrect');
                 }
                 file.etag = etag;
-                saveVerify = true;
+                updateVerify = true;
               });
             }
           });
         });
       });
       return promise.then(function () {
-        if (saveVerify) {
-          return fsfs.writeFile(verifyFilename, JSON.stringify(verify));
+        if (updateVerify) {
+          return fsfs.writeFile(verifyFilename, JSON.stringify(verify)).catch(function (err) {
+            debug('Can\'t update verify file', verifyFilename, err);
+          });
         }
       });
     });
