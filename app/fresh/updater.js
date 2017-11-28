@@ -376,7 +376,10 @@ class Updater extends EventEmitter {
       method: 'GET',
       url: url,
       headers: headers,
-      transport: popsicle.createTransport({ type: 'stream' })
+      transport: popsicle.createTransport({
+        type: 'stream',
+        unzip false
+      })
     });
     request.on('progress', function () {
       self.emit('downloading-progress', {
