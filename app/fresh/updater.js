@@ -433,8 +433,10 @@ class Updater extends EventEmitter {
     }).then(function () {
       const stream = fsfs.createReadStream(filename);
       const a = new PassThrough();
+      stream.pipe(a);
       stream.on('error', err => a.emit('error', err));
       const b = new PassThrough();
+      stream.pipe(b);
       stream.on('error', err => b.emit('error', err));
 
       return Promise.all([
