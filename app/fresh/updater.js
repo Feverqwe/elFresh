@@ -9,6 +9,7 @@ const fsfs = require('fs-extra/lib/fs');
 const fsRemove = require('fs-extra/lib/remove');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
+const pump = require('pump');
 
 /**
  * @typedef {{}} FreshBundleUpdate
@@ -409,27 +410,21 @@ class Updater extends EventEmitter {
           options.flags = 'a';
         }
 
-        res.body
-          .on('error', function (err) {
-            reject(err);
-          })
-          .pipe(fsfs.createWriteStream(filename, options))
-          .on('error', function (err) {
-            reject(err);
-          })
-          .on('finish', function () {
-            if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
-              const err = new Error('File size is not full');
-              err.res = res;
-              err.code = 'FILE_IS_NOT_FULL';
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
+        pump(
+          res.body,
+          fsfs.createWriteStream(filename, options),
+          err => err ? reject(err) : resolve()
+        );
 
         res.body.resume();
       });
+    }).then(function () {
+      if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
+        const err = new Error('File size is not full');
+        err.res = res;
+        err.code = 'FILE_IS_NOT_FULL';
+        throw err;
+      }
     });
   }
 
