@@ -10,6 +10,7 @@ const fsRemove = require('fs-extra/lib/remove');
 const fsMkdirs = require('fs-extra/lib/mkdirs');
 const {EventEmitter} = require('events');
 const pump = require('pump');
+const {PassThrough} = require('stream');
 
 /**
  * @typedef {{}} FreshBundleUpdate
@@ -309,18 +310,10 @@ class Updater extends EventEmitter {
    * @return {Promise.<string>}
    */
   _getStreamHash(stream, alg) {
+    const self = this;
     return new Promise(function (resolve, reject) {
-      stream
-        .on('error', function (err) {
-          reject(err);
-        })
-        .pipe(crypto.createHash(alg).setEncoding('hex'))
-        .on('error', function (err) {
-          reject(err);
-        })
-        .on('finish', function () {
-          resolve(this.read());
-        });
+      const hash = crypto.createHash(alg).setEncoding('hex');
+      pump(stream, hash, err => err ? reject(err) : resolve(hash.read()));
     });
   }
 
@@ -439,9 +432,14 @@ class Updater extends EventEmitter {
       return fsMkdirs.ensureDir(extractPath);
     }).then(function () {
       const stream = fsfs.createReadStream(filename);
+      const a = new PassThrough();
+      stream.on('error', err => a.emit('error', err));
+      const b = new PassThrough();
+      stream.on('error', err => b.emit('error', err));
+
       return Promise.all([
-        self._getZipFiles(stream),
-        self._extractZip(stream, extractPath)
+        self._getZipFiles(a),
+        self._extractZip(b, extractPath)
       ]).then(function (results) {
         return results[0];
       });
@@ -456,35 +454,24 @@ class Updater extends EventEmitter {
     const self = this;
     return new Promise(function (resolve, reject) {
       const files = [];
-      return stream
-        .on('error', function (err) {
-          reject(err);
-        })
-        .pipe(unzip.Parse())
-        .on('error', function (err) {
-          reject(err);
-        })
-        .on('entry', function (entry) {
-          if (entry.type === 'File') {
-            const promise = self._getStreamHash(entry, 'sha256')
-              .then(function (sha256) {
-                return {
-                  path: entry.path,
-                  size: entry.size,
-                  sha256: sha256
-                };
-              });
-            files.push(promise);
-          } else {
-            entry.autodrain();
-          }
-        })
-        .on('error', function (err) {
-          reject(err);
-        })
-        .on('close', function () {
-          resolve(Promise.all(files));
-        });
+      const unzip = unzip.Parse();
+      unzip.on('entry', function (entry) {
+        if (entry.type === 'File') {
+          const promise = self._getStreamHash(entry, 'sha256')
+            .then(function (sha256) {
+              return {
+                path: entry.path,
+                size: entry.size,
+                sha256: sha256
+              };
+            });
+          files.push(promise);
+        } else {
+          entry.on('error', err => debug('entry autodrain error', entry, err));
+          entry.autodrain();
+        }
+      });
+      pump(stream, unzip, err => err ? reject(err) : resolve(Promise.all(files)));
     });
   }
 
@@ -496,19 +483,10 @@ class Updater extends EventEmitter {
   _extractZip(stream, extractPath) {
     const self = this;
     return new Promise(function (resolve, reject) {
-      return stream
-        .on('error', function (err) {
-          reject(err);
-        })
-        .pipe(unzip.Extract({
-          path: extractPath
-        }))
-        .on('error', function (err) {
-          reject(err);
-        })
-        .on('close', function () {
-          resolve();
-        });
+      const unzip = unzip.Extract({
+        path: extractPath
+      });
+      pump(stream, unzip, err => err ? reject(err) : resolve());
     });
   }
 
