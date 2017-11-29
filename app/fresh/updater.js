@@ -410,14 +410,14 @@ class Updater extends EventEmitter {
         );
 
         res.body.resume();
+      }).then(function () {
+        if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
+          const err = new Error('File size is not full');
+          err.res = res;
+          err.code = 'FILE_IS_NOT_FULL';
+          throw err;
+        }
       });
-    }).then(function () {
-      if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
-        const err = new Error('File size is not full');
-        err.res = res;
-        err.code = 'FILE_IS_NOT_FULL';
-        throw err;
-      }
     });
   }
 
