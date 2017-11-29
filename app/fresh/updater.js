@@ -458,6 +458,7 @@ class Updater extends EventEmitter {
       const files = [];
       const parse = unzip.Parse();
       parse.on('entry', function (entry) {
+        entry.on('error', err => debug('parse entry error', entry, err));
         if (entry.type === 'File') {
           const promise = self._getStreamHash(entry, 'sha256')
             .then(function (sha256) {
@@ -469,7 +470,6 @@ class Updater extends EventEmitter {
             });
           files.push(promise);
         } else {
-          entry.on('error', err => debug('entry autodrain error', entry, err));
           entry.autodrain();
         }
       });
