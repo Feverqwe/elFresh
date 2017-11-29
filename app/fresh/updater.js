@@ -454,8 +454,8 @@ class Updater extends EventEmitter {
     const self = this;
     return new Promise(function (resolve, reject) {
       const files = [];
-      const unzip = unzip.Parse();
-      unzip.on('entry', function (entry) {
+      const parse = unzip.Parse();
+      parse.on('entry', function (entry) {
         if (entry.type === 'File') {
           const promise = self._getStreamHash(entry, 'sha256')
             .then(function (sha256) {
@@ -471,7 +471,7 @@ class Updater extends EventEmitter {
           entry.autodrain();
         }
       });
-      pump(stream, unzip, err => err ? reject(err) : resolve(Promise.all(files)));
+      pump(stream, parse, err => err ? reject(err) : resolve(Promise.all(files)));
     });
   }
 
@@ -483,10 +483,10 @@ class Updater extends EventEmitter {
   _extractZip(stream, extractPath) {
     const self = this;
     return new Promise(function (resolve, reject) {
-      const unzip = unzip.Extract({
+      const extract = unzip.Extract({
         path: extractPath
       });
-      pump(stream, unzip, err => err ? reject(err) : resolve());
+      pump(stream, extract, err => err ? reject(err) : resolve());
     });
   }
 
