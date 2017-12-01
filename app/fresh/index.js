@@ -111,7 +111,7 @@ class Fresh {
         });
       }
     }).catch(function (err) {
-      debug('autoUpdate error', err);
+      debug('autoUpdate error %o', err);
     });
   }
 
