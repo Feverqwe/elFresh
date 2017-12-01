@@ -384,6 +384,8 @@ class Updater extends EventEmitter {
       });
     });
     return request.then(function (res) {
+      res.body.on('error', err => {});
+
       const successStatus = stat ? 206 : 200;
       if (res.status !== successStatus) {
         request.abort();
