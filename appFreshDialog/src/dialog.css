@@ -4,7 +4,7 @@ html {
 }
 
 body {
-    background-color: #ececec;
+    background-color: #ebedef;
     height: 100%;
     padding: 23px 21px;
     color: #000;
@@ -42,6 +42,17 @@ body {
 
 .dialog-button button {
     min-width: 100px;
+    border: 0;
+    border-radius: 2px;
+    background-color: #bfc4cb;
+}
+
+.dialog-button button:hover {
+    background-color: #b0b6be;
+}
+
+.dialog-button button:active {
+    background-color: #a2a8b2;
 }
 
 progress {
