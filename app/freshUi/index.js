@@ -1,7 +1,7 @@
 const debug = require('debug')('freshUi');
-const url = require('url');
 const path = require('path');
-const {BrowserWindow, ipcMain, app} = require('electron');
+const {BrowserWindow, ipcMain} = require('electron');
+const fs = require('fs');
 
 class Dialog {
   constructor(/**Fresh*/fresh) {
@@ -33,17 +33,15 @@ class Dialog {
       // resizable: false,
       fullscreenable: false,
       autoHideMenuBar: true,
-      backgroundColor: '#ececec',
+      backgroundColor: '#ebedef',
       title: 'Update'
     });
 
     self.win = win;
 
-    win.loadURL(url.format({
-      protocol: 'file',
-      slashes: true,
-      pathname: path.join(__dirname, '/dialog/index.html')
-    }));
+    const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(fs.readFileSync(path.join(__dirname, '/dialog/index.html')));
+
+    win.loadURL(dataUrl);
 
     win.on('closed', function () {
       self.win = null;

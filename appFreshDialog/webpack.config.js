@@ -1,7 +1,8 @@
-const {SourceMapDevToolPlugin, DefinePlugin} = require('webpack');
+const {DefinePlugin} = require('webpack');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
 
 module.exports = {
   entry: {
@@ -47,20 +48,17 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin('dist'),
-    new UglifyJSPlugin({
-      sourceMap: true
-    }),
+    new UglifyJSPlugin(),
     new DefinePlugin({
       'process.env': {
         'NODE_ENV': JSON.stringify('production')
       }
     }),
-    new SourceMapDevToolPlugin({
-      filename: '[file].map'
-    }),
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: 'src/index.html'
-    })
+      template: 'src/index.html',
+      inlineSource: /\.js$/
+    }),
+    new HtmlWebpackInlineSourcePlugin()
   ]
 };

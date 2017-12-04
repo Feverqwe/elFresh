@@ -2,7 +2,7 @@ const gulp = require('gulp');
 const webpack = require('webpack-stream');
 
 gulp.task('copyFreshDialog', ['buildFreshDialog'], function () {
-  return gulp.src('dist/**')
+  return gulp.src('dist/*.html')
     .pipe(gulp.dest('../app/freshUi/dialog/'));
 });
 
