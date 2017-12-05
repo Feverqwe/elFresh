@@ -1,5 +1,5 @@
 html {
-    user-select: none;
+    user-select: text;
     height: 100%;
 }
 
@@ -41,6 +41,7 @@ body {
 }
 
 .dialog-button button {
+    height: 28px;
     min-width: 100px;
     border: 0;
     border-radius: 2px;
