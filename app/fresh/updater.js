@@ -175,7 +175,9 @@ class Updater extends EventEmitter {
       freshVersion: self._fresh.version
     })).then(function (res) {
       if (res.status !== 200) {
-        throw new Error("Bad status");
+        const err = new Error(res.status + ' - ' + JSON.stringify(res.body));
+        err.statusCode = res.status;
+        throw err;
       }
       /**@type FreshBundleUpdate*/
       const meta = JSON.parse(res.body);
@@ -328,7 +330,7 @@ class Updater extends EventEmitter {
     const tryContinue = function () {
       return fsfs.stat(filename).then(function (stat) {
         return self._downloadFile(url, filename, stat).catch(function (err) {
-          if (err.res && err.res.status === 416) {
+          if (err.statusCode === 416) {
             debug('Unable to resume download!', err);
             return self._downloadFile(url, filename);
           }
@@ -389,8 +391,8 @@ class Updater extends EventEmitter {
       const successStatus = stat ? 206 : 200;
       if (res.status !== successStatus) {
         request.abort();
-        const err = new Error('Bad status');
-        err.res = res;
+        const err = new Error(res.status + ' - ' + JSON.stringify(res.body));
+        err.statusCode = res.status;
         throw err;
       }
 
@@ -415,7 +417,6 @@ class Updater extends EventEmitter {
       }).then(function () {
         if (request.downloadLength && request.downloadedBytes !== request.downloadLength) {
           const err = new Error('File size is not full');
-          err.res = res;
           err.code = 'FILE_IS_NOT_FULL';
           throw err;
         }
