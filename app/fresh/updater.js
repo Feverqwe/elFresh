@@ -391,7 +391,7 @@ class Updater extends EventEmitter {
       const successStatus = stat ? 206 : 200;
       if (res.status !== successStatus) {
         request.abort();
-        const err = new Error(res.status + ' - ' + JSON.stringify(res.body));
+        const err = new Error(res.status + ' - ' + JSON.stringify(''));
         err.statusCode = res.status;
         throw err;
       }
