@@ -14,7 +14,7 @@
     "rebuild": "electron-rebuild --module-dir ../app"
   },
   "devDependencies": {
-    "electron": "1.7.9",
+    "electron": "1.8.4",
     "electron-builder": "^19.27.3",
     "electron-rebuild": "^1.6.0",
     "gulp": "^3.9.1"

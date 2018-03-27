@@ -6,7 +6,7 @@
     "appId": "electron.freshElectron",
     "productName": "freshElectron",
     "compression": "maximum",
-    "electronVersion": "1.7.9",
+    "electronVersion": "1.8.4",
     "win": {
       "target": [
         "dir",

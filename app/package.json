@@ -13,6 +13,6 @@
     "fs-extra": "^4.0.2",
     "popsicle": "^9.1.0",
     "pump": "^1.0.3",
-    "unzip": "^0.1.11"
+    "unzip": "git+https://github.com/glebdmitriew/node-unzip-2.git#4af1bffaf7fb64b0b62ec52d50564996f8f4fdaf"
   }
 }
