@@ -10,9 +10,9 @@
   "dependencies": {
     "compare-versions": "^3.1.0",
     "debug": "^3.1.0",
-    "fs-extra": "^4.0.2",
+    "fs-extra": "^4.0.3",
+    "node-unzip-2": "^0.2.7",
     "popsicle": "^9.1.0",
-    "pump": "^1.0.3",
-    "unzip": "git+https://github.com/glebdmitriew/node-unzip-2.git#4af1bffaf7fb64b0b62ec52d50564996f8f4fdaf"
+    "pump": "^1.0.3"
   }
 }
